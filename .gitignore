@@ -52,3 +52,8 @@ examples/operators/cublas/01_cublas_saxpy
 examples/operators/cublas/02_cublas_sgemm
 examples/operators/cublas/03_cublas_gemv
 examples/operators/cublas/04_cublas_strided_batched_gemm
+examples/operators/cudnn/01_cudnn_conv2d_forward
+examples/operators/cudnn/02_cudnn_pooling_forward
+examples/operators/cudnn/03_cudnn_activation_forward
+examples/operators/cudnn/04_cudnn_softmax_forward
+examples/operators/cudnn/05_cudnn_batchnorm_inference

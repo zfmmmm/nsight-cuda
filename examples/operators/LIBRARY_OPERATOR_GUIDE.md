@@ -30,7 +30,7 @@ cuDNN 的核心是 descriptor：
 - Pooling descriptor：描述窗口、stride、padding、max/avg。
 - Activation descriptor：描述 ReLU/tanh/sigmoid 等。
 
-本机当前缺 `cudnn.h`，所以 cuDNN 示例源码已写但未实际编译运行。安装 cuDNN 开发包后，按 `BUILD_AND_RUN.md` 中命令编译。
+当前机器已安装 cuDNN 9.23.2 / CUDA 13，5 个 cuDNN 示例均已编译运行 PASS。头文件位于 `/usr/include/x86_64-linux-gnu/cudnn.h`，库位于 `/usr/lib/x86_64-linux-gnu/libcudnn.so`。
 
 BatchNorm 与 LayerNorm/RMSNorm 区别：
 

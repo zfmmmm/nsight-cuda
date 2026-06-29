@@ -6,7 +6,7 @@
 
 - `cuda/`：21 个 CUDA C++ 手写算子，每个文件一个 `main`，可独立编译运行。
 - `cublas/`：4 个 cuBLAS 标准库调用示例。
-- `cudnn/`：5 个 cuDNN descriptor 调用示例。本机缺 `cudnn.h`，源码已写，未实际编译。
+- `cudnn/`：5 个 cuDNN descriptor 调用示例，当前已在 cuDNN 9.23 / CUDA 13 环境编译运行通过。
 - `triton/`：9 个 Triton Python 算子。本机缺 `torch` 和 `triton`，源码已写，已做 AST 语法解析，未实际运行。
 - `include/common.hpp`：错误检查、随机初始化、误差校验、CUDA event 计时工具。
 
@@ -15,14 +15,14 @@
 - `nvcc`：CUDA 13.0 可用。
 - GPU：NVIDIA GeForce RTX 5060 Ti，SM120。
 - cuBLAS：可链接、可运行。
-- cuDNN：不可用，`cudnn.h` 不存在。
+- cuDNN：9.23.2，可编译运行。
 - Python torch/triton：当前环境未安装。
 
 验证结果：
 
 - CUDA 手写算子：21/21 编译运行 PASS。
 - cuBLAS 示例：4/4 编译运行 PASS。
-- cuDNN 示例：0/5 本机编译，原因是缺 cuDNN header。
+- cuDNN 示例：5/5 本机编译运行 PASS。
 - Triton 示例：0/9 本机运行，原因是缺 torch/triton；9/9 AST 语法解析通过。
 
 从这里开始：

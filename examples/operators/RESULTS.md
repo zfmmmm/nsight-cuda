@@ -5,7 +5,7 @@
 - GPU：NVIDIA GeForce RTX 5060 Ti
 - CUDA：13.0
 - cuBLAS：可链接运行
-- cuDNN：不可编译，缺 `cudnn.h`
+- cuDNN：9.23.2，可编译运行
 - Python：缺 `torch` 和 `triton`
 
 ## 总览表
@@ -37,5 +37,9 @@
 | `cublas/02_cublas_sgemm.cu` | SGEMM | cuBLAS | column-major 适配 | `nvcc -O3 -lineinfo -std=c++17 -I../include 02_cublas_sgemm.cu -lcublas -o 02_cublas_sgemm` | `./02_cublas_sgemm` | PASS | max error 3.24249e-05, 9259.461 GFLOP/s |
 | `cublas/03_cublas_gemv.cu` | GEMV | cuBLAS | row-major 适配 | `nvcc -O3 -lineinfo -std=c++17 -I../include 03_cublas_gemv.cu -lcublas -o 03_cublas_gemv` | `./03_cublas_gemv` | PASS | max error 4.57764e-05 |
 | `cublas/04_cublas_strided_batched_gemm.cu` | batched GEMM | cuBLAS | strided batch | `nvcc -O3 -lineinfo -std=c++17 -I../include 04_cublas_strided_batched_gemm.cu -lcublas -o 04_cublas_strided_batched_gemm` | `./04_cublas_strided_batched_gemm` | PASS | max error 2.86102e-06 |
-| `cudnn/*.cu` | conv/pool/activation/softmax/bn | cuDNN | descriptor API | `nvcc ... -lcudnn` | 对应可执行文件 | 未跑通 | 本机缺 `cudnn.h` |
+| `cudnn/01_cudnn_conv2d_forward.cu` | Conv2D forward | cuDNN | tensor/filter/convolution descriptor | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 01_cudnn_conv2d_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 01_cudnn_conv2d_forward` | `./01_cudnn_conv2d_forward` | PASS | max error 9.53674e-07, 0.0110 ms |
+| `cudnn/02_cudnn_pooling_forward.cu` | pooling forward | cuDNN | pooling descriptor | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 02_cudnn_pooling_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 02_cudnn_pooling_forward` | `./02_cudnn_pooling_forward` | PASS | max error 0, 0.0021 ms |
+| `cudnn/03_cudnn_activation_forward.cu` | ReLU forward | cuDNN | activation descriptor | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 03_cudnn_activation_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 03_cudnn_activation_forward` | `./03_cudnn_activation_forward` | PASS | max error 0, 0.0082 ms |
+| `cudnn/04_cudnn_softmax_forward.cu` | softmax forward | cuDNN | softmax mode | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 04_cudnn_softmax_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 04_cudnn_softmax_forward` | `./04_cudnn_softmax_forward` | PASS | max error 1.35042e-08, 0.0184 ms |
+| `cudnn/05_cudnn_batchnorm_inference.cu` | batchnorm inference | cuDNN | BN tensor descriptor | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 05_cudnn_batchnorm_inference.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 05_cudnn_batchnorm_inference` | `./05_cudnn_batchnorm_inference` | PASS | max error 1.19209e-07, 0.0020 ms |
 | `triton/*.py` | vector/matmul/norm/softmax 等 | Triton | program/block tensor/mask | 不编译 | `python xx.py` | 未运行 | 本机缺 `torch` 和 `triton`；AST 解析通过 |

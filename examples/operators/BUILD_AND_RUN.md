@@ -45,15 +45,15 @@ nvcc -O3 -lineinfo -std=c++17 -I../include 04_cublas_strided_batched_gemm.cu -lc
 
 ## cuDNN
 
-当前本机缺 `cudnn.h`，以下命令未能在本机编译。安装 cuDNN 开发包后运行：
+当前本机 cuDNN 9.23.2 / CUDA 13 已安装，以下命令已编译运行通过。这里显式写出 include/lib 路径，避免不同发行版默认搜索路径差异：
 
 ```bash
 cd examples/operators/cudnn
-nvcc -O3 -lineinfo -std=c++17 -I../include 01_cudnn_conv2d_forward.cu -lcudnn -o 01_cudnn_conv2d_forward && ./01_cudnn_conv2d_forward
-nvcc -O3 -lineinfo -std=c++17 -I../include 02_cudnn_pooling_forward.cu -lcudnn -o 02_cudnn_pooling_forward && ./02_cudnn_pooling_forward
-nvcc -O3 -lineinfo -std=c++17 -I../include 03_cudnn_activation_forward.cu -lcudnn -o 03_cudnn_activation_forward && ./03_cudnn_activation_forward
-nvcc -O3 -lineinfo -std=c++17 -I../include 04_cudnn_softmax_forward.cu -lcudnn -o 04_cudnn_softmax_forward && ./04_cudnn_softmax_forward
-nvcc -O3 -lineinfo -std=c++17 -I../include 05_cudnn_batchnorm_inference.cu -lcudnn -o 05_cudnn_batchnorm_inference && ./05_cudnn_batchnorm_inference
+nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 01_cudnn_conv2d_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 01_cudnn_conv2d_forward && ./01_cudnn_conv2d_forward
+nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 02_cudnn_pooling_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 02_cudnn_pooling_forward && ./02_cudnn_pooling_forward
+nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 03_cudnn_activation_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 03_cudnn_activation_forward && ./03_cudnn_activation_forward
+nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 04_cudnn_softmax_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 04_cudnn_softmax_forward && ./04_cudnn_softmax_forward
+nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 05_cudnn_batchnorm_inference.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 05_cudnn_batchnorm_inference && ./05_cudnn_batchnorm_inference
 ```
 
 ## Triton
