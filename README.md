@@ -7,6 +7,7 @@
 1. 先读 `docs/nsight_learning_guide.md`。
 2. 按顺序运行 `examples/nsys/*`，学习程序级 timeline、NVTX、memcpy、同步和小 kernel 问题。
 3. 再运行 `examples/ncu/*`，学习单 kernel 内部的 compute、memory、coalescing、shared bank conflict、occupancy、divergence、barrier 和 local memory 问题。
+4. 运行 `examples/operators/*`，学习 CUDA / Triton / cuBLAS / cuDNN 面试高频算子实现与库调用。
 
 每个 example 的 README 都包含：
 

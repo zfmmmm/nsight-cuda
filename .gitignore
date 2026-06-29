@@ -25,3 +25,30 @@ examples/ncu/10_good_vs_bad_kernel/good_vs_bad_kernel
 # Temporary files
 *.o
 *.log
+
+# Operator example binaries
+examples/operators/cuda/01_vector_add
+examples/operators/cuda/02_saxpy
+examples/operators/cuda/03_reduce_sum
+examples/operators/cuda/04_reduce_max
+examples/operators/cuda/05_argmax
+examples/operators/cuda/06_prefix_scan
+examples/operators/cuda/07_matrix_transpose
+examples/operators/cuda/08_sgemm_tiled
+examples/operators/cuda/09_gemv
+examples/operators/cuda/10_row_softmax
+examples/operators/cuda/11_layernorm
+examples/operators/cuda/12_rmsnorm
+examples/operators/cuda/13_fused_elementwise
+examples/operators/cuda/14_activation_relu_gelu_silu
+examples/operators/cuda/15_conv2d_direct
+examples/operators/cuda/16_pooling
+examples/operators/cuda/17_histogram_atomic
+examples/operators/cuda/18_quant_dequant_int8
+examples/operators/cuda/19_embedding_gather
+examples/operators/cuda/20_naive_attention
+examples/operators/cuda/21_topk_small_k
+examples/operators/cublas/01_cublas_saxpy
+examples/operators/cublas/02_cublas_sgemm
+examples/operators/cublas/03_cublas_gemv
+examples/operators/cublas/04_cublas_strided_batched_gemm
