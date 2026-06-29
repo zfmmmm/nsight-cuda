@@ -1,0 +1,27 @@
+# Build outputs
+examples/nsys/01_nvtx_basic_cpp/nvtx_basic_cpp
+examples/nsys/02_cpu_gpu_gap/cpu_gpu_gap
+examples/nsys/03_memcpy_bottleneck/memcpy_bottleneck
+examples/nsys/04_sync_bottleneck/sync_bottleneck
+examples/nsys/05_many_small_kernels/many_small_kernels
+examples/ncu/01_compute_bound/compute_bound
+examples/ncu/02_memory_bound/memory_bound
+examples/ncu/03_uncoalesced_access/uncoalesced_access
+examples/ncu/04_shared_bank_conflict/shared_bank_conflict
+examples/ncu/05_register_pressure/register_pressure
+examples/ncu/06_shared_memory_occupancy_limit/shared_memory_occupancy_limit
+examples/ncu/07_branch_divergence/branch_divergence
+examples/ncu/08_barrier_stall/barrier_stall
+examples/ncu/09_register_spill_local_memory/register_spill_local_memory
+examples/ncu/10_good_vs_bad_kernel/good_vs_bad_kernel
+
+# Nsight generated reports
+*.nsys-rep
+*.ncu-rep
+*.sqlite
+*.qdrep
+*.qdstrm
+
+# Temporary files
+*.o
+*.log

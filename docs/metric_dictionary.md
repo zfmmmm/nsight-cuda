@@ -1,0 +1,79 @@
+# Nsight 指标字典
+
+## Nsight Systems
+
+- CUDA API timeline：CPU 线程调用 CUDA API 的时间线。看 host 是否卡在 `cudaMemcpy`、同步、分配。
+- CUDA GPU Kernel timeline：GPU 上 kernel 实际执行的时间线。看 GPU 是否有空洞、kernel 是否重叠。
+- CUDA Memcpy timeline：GPU copy engine 或相关 memcpy 操作时间线。看 H2D/D2H/D2D。
+- NVTX range：用户标记的业务阶段。用来把代码逻辑映射到 CUDA 活动。
+- `cuda_api_sum`：CUDA API 汇总。重点列：`Name`、`Num Calls`、`Total Time`、`Avg`、`Max`。
+- `cuda_gpu_kern_sum`：GPU kernel 汇总。重点列：`Name`、`Instances`、`Total Time`、`Avg`。
+- `cuda_gpu_mem_time_sum`：按时间汇总 GPU MemOps。重点列：`Operation`、`Count`、`Total Time`、`Avg`。
+- `cuda_gpu_trace`：逐条 GPU 操作。重点列：`Start`、`Duration`、`Strm`、`Name`、`SrcMemKd`、`DstMemKd`。
+- `nvtx_sum`：NVTX 范围 CPU 时间汇总。重点列：`Range`、`Instances`、`Total Time`、`Avg`。
+- `nvtx_kern_sum`：NVTX 范围与 kernel 的关联。重点列：`NVTX Range`、`Kern Inst`、`Kernel Name`。
+- `osrt_sum`：OS runtime 汇总。看 `poll`、`nanosleep`、`read/write`、锁等待。
+- `cudaLaunchKernel`：CPU 发射 kernel 的 API。调用多且 kernel 小，可能是 launch fragmentation。
+- `cudaMemcpy`：同步拷贝，CPU API 时间通常包含等待。
+- `cudaMemcpyAsync`：异步拷贝 API。是否真正异步要看 pinned memory、stream 和同步点。
+- `cudaDeviceSynchronize`：等待整个 device 前面工作完成。循环内出现通常危险。
+- `cudaStreamSynchronize`：等待某个 stream 完成。比 device 细，但仍会阻塞 host。
+- `cudaMalloc` / `cudaFree`：设备内存分配/释放。第一次可能包含 context 初始化；频繁调用可能引入同步和分配成本。
+- H2D：Host-to-Device。
+- D2H：Device-to-Host。
+- D2D：Device-to-Device。
+- stream id：GPU 操作所在 stream。不同 stream 不代表一定重叠，还要看依赖和硬件资源。
+- kernel duration：单个 kernel 在 GPU 上执行时间。
+- kernel instances：kernel 调用次数。
+- total time：累计时间。
+- average time：平均每次时间。
+- median time：中位数，抗极端值。
+- max time：最大单次时间，用来发现长尾。
+
+## Nsight Compute
+
+- Speed Of Light：高层吞吐概览，先看 compute 和 memory 相对峰值。
+- Compute Throughput：SM compute 侧吞吐百分比。高说明算力/执行管线忙。
+- Memory Throughput：内存层级吞吐百分比。高说明内存系统忙。
+- Roofline：用 arithmetic intensity 和 FLOP/s 判断 compute/memory 上限。
+- Arithmetic Intensity：每字节数据对应多少计算。低通常偏 memory-bound。
+- LaunchStats：kernel launch 配置和资源使用。
+- Grid Size：block 数。
+- Block Size：每 block 线程数。
+- Registers Per Thread：每线程寄存器数。高可能限制 occupancy。
+- Static Shared Memory：编译期 shared memory。
+- Dynamic Shared Memory：launch 时传入的 shared memory。
+- Waves Per SM：每个 SM 要执行多少波 block。太低可能工作量小。
+- Theoretical Occupancy：由资源限制计算出的理论 occupancy。
+- Achieved Occupancy：实际测得 active warps 比例。
+- Occupancy Limit Reason：通过 `Block Limit Registers/Shared Mem/Warps/SM/Barriers` 判断限制项。
+- Warp State Statistics：warp 调度和等待状态。
+- Eligible Warps Per Scheduler：每个 scheduler 可发射 warp 数。低说明隐藏延迟能力差。
+- Issue Active：scheduler 发出指令的活跃程度。
+- No Eligible：没有可发射 warp，常见于等待内存/同步。
+- Long Scoreboard：通常等待 L1TEX/global/local memory 数据依赖。
+- Short Scoreboard：常见于 shared memory、MIO、短延迟依赖。
+- Barrier：等待 barrier，例如 `__syncthreads()`。
+- Wait：等待固定延迟或依赖，需结合源码。
+- MIO Throttle：memory input/output pipeline 压力，常和 shared memory 有关。
+- LG Throttle：local/global memory pipeline 压力。
+- Math Pipe Throttle：数学管线压力。
+- Not Selected：warp eligible 但本周期没被选中，不一定是坏事。
+- Branch Resolving：分支解析等待。
+- MemoryWorkloadAnalysis：内存子系统分析。
+- DRAM Throughput：显存吞吐相对峰值。
+- L2 Throughput：L2 吞吐。
+- L1/TEX Throughput：L1/TEX 吞吐。
+- L2 Hit Rate：L2 命中率。
+- Sectors Per Request：每个请求产生的 sector 数。过高常表示不合并。
+- Shared Memory Bank Conflicts：shared memory bank 冲突，常表现为 excessive wavefront。
+- Local Memory：线程私有但位于内存层级的 local 地址空间，可能来自 local array 或 spill。
+- Register Spilling：寄存器不够时溢出到 local memory。要看 ptxas spill 或 NCU spilling requests。
+- ComputeWorkloadAnalysis：计算管线分析。
+- Tensor pipe：Tensor Core 管线。
+- FP32 pipe：FP32 管线。
+- INT pipe：整数管线。
+- SFU pipe：特殊函数管线，如 sin/cos/rsqrt 等。
+- LD/ST pipe：load/store 指令管线。
+- InstructionStats：执行/发射指令统计。
+- Source / SASS correlation：把指标关联到 CUDA 源码和 SASS 指令；需要 `-lineinfo`。
