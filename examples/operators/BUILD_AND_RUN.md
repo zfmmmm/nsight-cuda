@@ -31,6 +31,8 @@ nvcc -O3 -lineinfo -std=c++17 -I../include 18_quant_dequant_int8.cu -o 18_quant_
 nvcc -O3 -lineinfo -std=c++17 -I../include 19_embedding_gather.cu -o 19_embedding_gather && ./19_embedding_gather
 nvcc -O3 -lineinfo -std=c++17 -I../include 20_naive_attention.cu -o 20_naive_attention && ./20_naive_attention
 nvcc -O3 -lineinfo -std=c++17 -I../include 21_topk_small_k.cu -o 21_topk_small_k && ./21_topk_small_k
+nvcc -O3 -lineinfo -std=c++17 -I../include 22_online_softmax.cu -o 22_online_softmax && ./22_online_softmax
+nvcc -O3 -lineinfo -std=c++17 -I../include 23_flash_attention_forward.cu -o 23_flash_attention_forward && ./23_flash_attention_forward
 ```
 
 ## cuBLAS
@@ -71,4 +73,6 @@ python 06_layernorm.py
 python 07_rmsnorm.py
 python 08_transpose.py
 python 09_quant_dequant.py
+python 10_online_softmax.py
+python 11_flash_attention.py
 ```

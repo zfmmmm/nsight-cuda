@@ -27,6 +27,8 @@
 | `19_embedding_gather.cu` | embedding gather | LLM 输入层常见 | token row gather | irregular memory | cache hit, memory |
 | `20_naive_attention.cu` | naive attention | 理解 attention 组成 | QK^T + softmax + PV | 多 kernel pipeline | kernel launch, memory |
 | `21_topk_small_k.cu` | topK K=4 | value+index 选择 | 每行简单选择 | topK pair handling | branch, memory |
+| `22_online_softmax.cu` | online softmax | FlashAttention 前置核心 | 逐元素维护 running max 和 normalizer | online recurrence | exp/SFU, sequential dependency |
+| `23_flash_attention_forward.cu` | FlashAttention forward 教学版 | LLM 高频核心题 | 按 K/V tile 流式扫描，online softmax 累积 acc | tiling, online softmax, no score matrix | memory traffic, occupancy |
 
 正确性验证方式：
 
@@ -38,3 +40,4 @@
 
 - `06_prefix_scan.cu` 使用并行浮点加法，和 CPU 顺序加法不保证 bitwise 一致，容差设为 `1e-3`。
 - `21_topk_small_k.cu` 为了面试可读性使用单线程扫描每行，正确但不是高性能极限版本。
+- `23_flash_attention_forward.cu` 是面试教学版，突出 online softmax 递推和不保存 score matrix；不是 FlashAttention 生产级优化版。

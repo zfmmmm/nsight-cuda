@@ -19,5 +19,7 @@ Triton 和 CUDA 的思维差异：
 - `07_rmsnorm.py`：LLM 高频 RMSNorm。
 - `08_transpose.py`：block transpose。
 - `09_quant_dequant.py`：per-tensor int8 quant/dequant。
+- `10_online_softmax.py`：用 Triton 表达 online softmax 的 running max / normalizer。
+- `11_flash_attention.py`：single-head FlashAttention forward 教学版，按 K/V block 流式更新 `m/l/acc`。
 
 本机当前缺 `torch` 和 `triton`，所以这些脚本未实际运行；已用 Python AST 解析确认语法结构可读。

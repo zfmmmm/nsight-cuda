@@ -78,6 +78,8 @@ examples/operators/cuda/18_quant_dequant_int8
 examples/operators/cuda/19_embedding_gather
 examples/operators/cuda/20_naive_attention
 examples/operators/cuda/21_topk_small_k
+examples/operators/cuda/22_online_softmax
+examples/operators/cuda/23_flash_attention_forward
 examples/operators/cublas/01_cublas_saxpy
 examples/operators/cublas/02_cublas_sgemm
 examples/operators/cublas/03_cublas_gemv

@@ -4,10 +4,10 @@
 
 目录：
 
-- `cuda/`：21 个 CUDA C++ 手写算子，每个文件一个 `main`，可独立编译运行。
+- `cuda/`：23 个 CUDA C++ 手写算子，每个文件一个 `main`，可独立编译运行。
 - `cublas/`：4 个 cuBLAS 标准库调用示例。
 - `cudnn/`：5 个 cuDNN descriptor 调用示例，当前已在 cuDNN 9.23 / CUDA 13 环境编译运行通过。
-- `triton/`：9 个 Triton Python 算子。本机缺 `torch` 和 `triton`，源码已写，已做 AST 语法解析，未实际运行。
+- `triton/`：11 个 Triton Python 算子。本机缺 `torch` 和 `triton`，源码已写，已做 AST 语法解析，未实际运行。
 - `include/common.hpp`：错误检查、随机初始化、误差校验、CUDA event 计时工具。
 
 已验证环境：
@@ -20,10 +20,10 @@
 
 验证结果：
 
-- CUDA 手写算子：21/21 编译运行 PASS。
+- CUDA 手写算子：23/23 编译运行 PASS。
 - cuBLAS 示例：4/4 编译运行 PASS。
 - cuDNN 示例：5/5 本机编译运行 PASS。
-- Triton 示例：0/9 本机运行，原因是缺 torch/triton；9/9 AST 语法解析通过。
+- Triton 示例：0/11 本机运行，原因是缺 torch/triton；11/11 AST 语法解析通过。
 
 从这里开始：
 
