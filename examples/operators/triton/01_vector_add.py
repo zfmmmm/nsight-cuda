@@ -1,4 +1,5 @@
 """Triton vector add. Run: python 01_vector_add.py"""
+
 import torch
 import triton
 import triton.language as tl
@@ -21,7 +22,11 @@ def main():
     add_kernel[grid](a, b, c, n, BLOCK=1024)
     torch.cuda.synchronize()
     err = (c - (a + b)).abs().max().item()
-    print(f"operator: triton_vector_add\nshape: n={n}\nGPU kernel: {'PASS' if err < 1e-6 else 'FAIL'}\nmax error: {err}\nPASS" if err < 1e-6 else "FAIL")
+    print(
+        f"operator: triton_vector_add\nshape: n={n}\nGPU kernel: {'PASS' if err < 1e-6 else 'FAIL'}\nmax error: {err}\nPASS"
+        if err < 1e-6
+        else "FAIL"
+    )
 
 
 if __name__ == "__main__":

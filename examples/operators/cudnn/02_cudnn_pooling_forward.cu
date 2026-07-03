@@ -1,7 +1,41 @@
 // 算子: cuDNN Pooling Forward
 // 面试考点: pooling descriptor、NCHW tensor descriptor
-// 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 02_cudnn_pooling_forward.cu -lcudnn -o 02_cudnn_pooling_forward
-// 运行: ./02_cudnn_pooling_forward
-#include <cudnn.h>
+// 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 02_cudnn_pooling_forward.cu -lcudnn -o
+// 02_cudnn_pooling_forward 运行: ./02_cudnn_pooling_forward
 #include "common.hpp"
-int main(){const int N=4,C=8,H=32,W=32,OH=16,OW=16;thrust::host_vector<float>hx(N*C*H*W),ref(N*C*OH*OW);fill_random(hx);for(int n=0;n<N;++n)for(int c=0;c<C;++c)for(int oh=0;oh<OH;++oh)for(int ow=0;ow<OW;++ow){float m=-1e30;for(int r=0;r<2;++r)for(int s=0;s<2;++s)m=std::max(m,hx[((n*C+c)*H+oh*2+r)*W+ow*2+s]);ref[((n*C+c)*OH+oh)*OW+ow]=m;}thrust::device_vector<float>x=hx,y(ref.size());cudnnHandle_t h;CUDNN_CHECK(cudnnCreate(&h));cudnnTensorDescriptor_t xd,yd;cudnnPoolingDescriptor_t pd;CUDNN_CHECK(cudnnCreateTensorDescriptor(&xd));CUDNN_CHECK(cudnnCreateTensorDescriptor(&yd));CUDNN_CHECK(cudnnCreatePoolingDescriptor(&pd));CUDNN_CHECK(cudnnSetTensor4dDescriptor(xd,CUDNN_TENSOR_NCHW,CUDNN_DATA_FLOAT,N,C,H,W));CUDNN_CHECK(cudnnSetTensor4dDescriptor(yd,CUDNN_TENSOR_NCHW,CUDNN_DATA_FLOAT,N,C,OH,OW));CUDNN_CHECK(cudnnSetPooling2dDescriptor(pd,CUDNN_POOLING_MAX,CUDNN_NOT_PROPAGATE_NAN,2,2,0,0,2,2));float a=1,b=0;auto launch=[&]{CUDNN_CHECK(cudnnPoolingForward(h,pd,&a,xd,raw(x),&b,yd,raw(y)));};float ms=time_cuda_ms(launch);thrust::host_vector<float>got=y;double err=0;bool pass=check_close(ref,got,1e-6f,&err);print_result("cudnn_pooling_forward","N=4,C=8,H=W=32,k=2,s=2",pass,err,ms);return pass?0:1;}
+#include <cudnn.h>
+int main() {
+    const int N = 4, C = 8, H = 32, W = 32, OH = 16, OW = 16;
+    thrust::host_vector<float> hx(N * C * H * W), ref(N * C * OH * OW);
+    fill_random(hx);
+    for (int n = 0; n < N; ++n)
+        for (int c = 0; c < C; ++c)
+            for (int oh = 0; oh < OH; ++oh)
+                for (int ow = 0; ow < OW; ++ow) {
+                    float m = -1e30;
+                    for (int r = 0; r < 2; ++r)
+                        for (int s = 0; s < 2; ++s)
+                            m = std::max(m, hx[((n * C + c) * H + oh * 2 + r) * W + ow * 2 + s]);
+                    ref[((n * C + c) * OH + oh) * OW + ow] = m;
+                }
+    thrust::device_vector<float> x = hx, y(ref.size());
+    cudnnHandle_t h;
+    CUDNN_CHECK(cudnnCreate(&h));
+    cudnnTensorDescriptor_t xd, yd;
+    cudnnPoolingDescriptor_t pd;
+    CUDNN_CHECK(cudnnCreateTensorDescriptor(&xd));
+    CUDNN_CHECK(cudnnCreateTensorDescriptor(&yd));
+    CUDNN_CHECK(cudnnCreatePoolingDescriptor(&pd));
+    CUDNN_CHECK(cudnnSetTensor4dDescriptor(xd, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, C, H, W));
+    CUDNN_CHECK(cudnnSetTensor4dDescriptor(yd, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, C, OH, OW));
+    CUDNN_CHECK(cudnnSetPooling2dDescriptor(pd, CUDNN_POOLING_MAX, CUDNN_NOT_PROPAGATE_NAN, 2, 2, 0,
+                                            0, 2, 2));
+    float a = 1, b = 0;
+    auto launch = [&] { CUDNN_CHECK(cudnnPoolingForward(h, pd, &a, xd, raw(x), &b, yd, raw(y))); };
+    float ms = time_cuda_ms(launch);
+    thrust::host_vector<float> got = y;
+    double err = 0;
+    bool pass = check_close(ref, got, 1e-6f, &err);
+    print_result("cudnn_pooling_forward", "N=4,C=8,H=W=32,k=2,s=2", pass, err, ms);
+    return pass ? 0 : 1;
+}

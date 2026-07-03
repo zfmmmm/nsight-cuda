@@ -25,6 +25,36 @@ examples/ncu/10_good_vs_bad_kernel/good_vs_bad_kernel
 # Temporary files
 *.o
 *.log
+*.tmp
+*.out
+
+# Local editor settings
+.vscode/
+.idea/
+
+# Python virtual environments and caches
+triton_env/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local package/install artifacts
+*.deb
+*.rpm
+*.whl
+*.egg-info/
+
+# CUDA/NVIDIA generated artifacts
+*.ptx
+*.cubin
+*.fatbin
+*.sass
+*.nvvp
 
 # Operator example binaries
 examples/operators/cuda/01_vector_add

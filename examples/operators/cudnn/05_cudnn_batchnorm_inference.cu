@@ -1,7 +1,42 @@
 // 算子: cuDNN BatchNorm Inference
 // 面试考点: BN inference descriptor，与 LayerNorm/RMSNorm 的归一化维度不同
-// 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 05_cudnn_batchnorm_inference.cu -lcudnn -o 05_cudnn_batchnorm_inference
-// 运行: ./05_cudnn_batchnorm_inference
-#include <cudnn.h>
+// 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 05_cudnn_batchnorm_inference.cu -lcudnn -o
+// 05_cudnn_batchnorm_inference 运行: ./05_cudnn_batchnorm_inference
 #include "common.hpp"
-int main(){const int N=8,C=16,H=16,W=16,total=N*C*H*W;thrust::host_vector<float>x(total),scale(C),bias(C),mean(C),var(C),ref(total);fill_random(x);fill_random(scale,0.5,1.5);fill_random(bias,-0.1,0.1);fill_random(mean,-0.2,0.2);fill_random(var,0.5,1.5);for(int n=0;n<N;++n)for(int c=0;c<C;++c)for(int h=0;h<H;++h)for(int w=0;w<W;++w){int id=((n*C+c)*H+h)*W+w;ref[id]=scale[c]*(x[id]-mean[c])/std::sqrt(var[c]+1e-5f)+bias[c];}thrust::device_vector<float>dx=x,dy(total),ds=scale,db=bias,dm=mean,dv=var;cudnnHandle_t handle;CUDNN_CHECK(cudnnCreate(&handle));cudnnTensorDescriptor_t xd,bd;CUDNN_CHECK(cudnnCreateTensorDescriptor(&xd));CUDNN_CHECK(cudnnCreateTensorDescriptor(&bd));CUDNN_CHECK(cudnnSetTensor4dDescriptor(xd,CUDNN_TENSOR_NCHW,CUDNN_DATA_FLOAT,N,C,H,W));CUDNN_CHECK(cudnnDeriveBNTensorDescriptor(bd,xd,CUDNN_BATCHNORM_SPATIAL));float a=1,b=0;auto launch=[&]{CUDNN_CHECK(cudnnBatchNormalizationForwardInference(handle,CUDNN_BATCHNORM_SPATIAL,&a,&b,xd,raw(dx),xd,raw(dy),bd,raw(ds),raw(db),raw(dm),raw(dv),1e-5));};float ms=time_cuda_ms(launch);thrust::host_vector<float>got=dy;double err=0;bool pass=check_close(ref,got,1e-4f,&err);print_result("cudnn_batchnorm_inference","N=8,C=16,H=W=16",pass,err,ms);return pass?0:1;}
+#include <cudnn.h>
+int main() {
+    const int N = 8, C = 16, H = 16, W = 16, total = N * C * H * W;
+    thrust::host_vector<float> x(total), scale(C), bias(C), mean(C), var(C), ref(total);
+    fill_random(x);
+    fill_random(scale, 0.5, 1.5);
+    fill_random(bias, -0.1, 0.1);
+    fill_random(mean, -0.2, 0.2);
+    fill_random(var, 0.5, 1.5);
+    for (int n = 0; n < N; ++n)
+        for (int c = 0; c < C; ++c)
+            for (int h = 0; h < H; ++h)
+                for (int w = 0; w < W; ++w) {
+                    int id = ((n * C + c) * H + h) * W + w;
+                    ref[id] = scale[c] * (x[id] - mean[c]) / std::sqrt(var[c] + 1e-5f) + bias[c];
+                }
+    thrust::device_vector<float> dx = x, dy(total), ds = scale, db = bias, dm = mean, dv = var;
+    cudnnHandle_t handle;
+    CUDNN_CHECK(cudnnCreate(&handle));
+    cudnnTensorDescriptor_t xd, bd;
+    CUDNN_CHECK(cudnnCreateTensorDescriptor(&xd));
+    CUDNN_CHECK(cudnnCreateTensorDescriptor(&bd));
+    CUDNN_CHECK(cudnnSetTensor4dDescriptor(xd, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, C, H, W));
+    CUDNN_CHECK(cudnnDeriveBNTensorDescriptor(bd, xd, CUDNN_BATCHNORM_SPATIAL));
+    float a = 1, b = 0;
+    auto launch = [&] {
+        CUDNN_CHECK(cudnnBatchNormalizationForwardInference(handle, CUDNN_BATCHNORM_SPATIAL, &a, &b,
+                                                            xd, raw(dx), xd, raw(dy), bd, raw(ds),
+                                                            raw(db), raw(dm), raw(dv), 1e-5));
+    };
+    float ms = time_cuda_ms(launch);
+    thrust::host_vector<float> got = dy;
+    double err = 0;
+    bool pass = check_close(ref, got, 1e-4f, &err);
+    print_result("cudnn_batchnorm_inference", "N=8,C=16,H=W=16", pass, err, ms);
+    return pass ? 0 : 1;
+}
