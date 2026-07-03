@@ -120,7 +120,7 @@ int main() {
 
   thrust::device_vector<float> q = hq, k = hk, v = hv, out(L * D);
   auto launch = [&] {
-    flash_attention_forward_kernel<D, TILE><<<L, 128>>>(raw(q), raw(k), raw(v), raw(out), L);
+    flash_attention_forward_kernel<D, TILE><<<L, 128>>>(thrust::raw_pointer_cast(q.data()), thrust::raw_pointer_cast(k.data()), thrust::raw_pointer_cast(v.data()), thrust::raw_pointer_cast(out.data()), L);
   };
   float ms = time_cuda_ms(launch, 3, 100);
   thrust::host_vector<float> got = out;

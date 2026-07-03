@@ -2,8 +2,8 @@
 // 面试考点: pooling descriptor、NCHW tensor descriptor
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 02_cudnn_pooling_forward.cu -lcudnn -o
 // 02_cudnn_pooling_forward 运行: ./02_cudnn_pooling_forward
-#include "common.hpp"
 #include <cudnn.h>
+#include "common.hpp"
 int main() {
     const int N = 4, C = 8, H = 32, W = 32, OH = 16, OW = 16;
     thrust::host_vector<float> hx(N * C * H * W), ref(N * C * OH * OW);
@@ -31,7 +31,7 @@ int main() {
     CUDNN_CHECK(cudnnSetPooling2dDescriptor(pd, CUDNN_POOLING_MAX, CUDNN_NOT_PROPAGATE_NAN, 2, 2, 0,
                                             0, 2, 2));
     float a = 1, b = 0;
-    auto launch = [&] { CUDNN_CHECK(cudnnPoolingForward(h, pd, &a, xd, raw(x), &b, yd, raw(y))); };
+    auto launch = [&] { CUDNN_CHECK(cudnnPoolingForward(h, pd, &a, xd, thrust::raw_pointer_cast(x.data()), &b, yd, thrust::raw_pointer_cast(y.data()))); };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = y;
     double err = 0;

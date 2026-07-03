@@ -31,7 +31,7 @@ int main() {
     float a = 1, b = 0;
     auto launch = [&] {
         CUDNN_CHECK(cudnnSoftmaxForward(h, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE, &a,
-                                        td, raw(x), &b, td, raw(y)));
+                                        td, thrust::raw_pointer_cast(x.data()), &b, td, thrust::raw_pointer_cast(y.data())));
     };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = y;

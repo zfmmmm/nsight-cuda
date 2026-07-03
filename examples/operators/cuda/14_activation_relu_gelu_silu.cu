@@ -26,7 +26,7 @@ int main() {
     }
     thrust::device_vector<float> d = h, dr(n), dg(n), ds(n);
     int th = 256, bl = 4096;
-    float ms = time_cuda_ms([&] { act_kernel<<<bl, th>>>(raw(d), raw(dr), raw(dg), raw(ds), n); });
+    float ms = time_cuda_ms([&] { act_kernel<<<bl, th>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dr.data()), thrust::raw_pointer_cast(dg.data()), thrust::raw_pointer_cast(ds.data()), n); });
     thrust::host_vector<float> gr = dr, gg = dg, gs = ds;
     double e1 = max_abs_diff(r, gr), e2 = max_abs_diff(g, gg), e3 = max_abs_diff(s, gs);
     bool pass = e1 < 1e-6 && e2 < 1e-5 && e3 < 1e-6;

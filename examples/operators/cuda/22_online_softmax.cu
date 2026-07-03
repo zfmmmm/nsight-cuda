@@ -65,7 +65,7 @@ int main() {
   thrust::device_vector<float> d = h, out(n);
   size_t smem = (cols + 2) * sizeof(float);
   auto launch = [&] {
-    online_softmax_kernel<<<rows, 256, smem>>>(raw(d), raw(out), rows, cols);
+    online_softmax_kernel<<<rows, 256, smem>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out.data()), rows, cols);
   };
   float ms = time_cuda_ms(launch, 3, 20);
   thrust::host_vector<float> got = out;

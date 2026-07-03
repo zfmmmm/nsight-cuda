@@ -38,7 +38,7 @@ int main() {
     thrust::device_vector<float> dx = hx, dw = hw, dy(out);
     int th = 256, bl = (out + th - 1) / th;
     float ms = time_cuda_ms(
-        [&] { conv2d_kernel<<<bl, th>>>(raw(dx), raw(dw), raw(dy), N, C, H, W, K, R, S, OH, OW); });
+        [&] { conv2d_kernel<<<bl, th>>>(thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(dw.data()), thrust::raw_pointer_cast(dy.data()), N, C, H, W, K, R, S, OH, OW); });
     thrust::host_vector<float> got = dy;
     double err = 0;
     bool pass = check_close(ref, got, 1e-4f, &err);

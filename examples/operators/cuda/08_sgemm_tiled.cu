@@ -46,7 +46,7 @@ int main() {
     thrust::device_vector<float> A = hA, B = hB, C(sizeC);
     dim3 block(16, 16), grid((N + 15) / 16, (M + 15) / 16);
     float ms =
-        time_cuda_ms([&] { sgemm_tiled<<<grid, block>>>(raw(A), raw(B), raw(C), M, N, K); }, 3, 20);
+        time_cuda_ms([&] { sgemm_tiled<<<grid, block>>>(thrust::raw_pointer_cast(A.data()), thrust::raw_pointer_cast(B.data()), thrust::raw_pointer_cast(C.data()), M, N, K); }, 3, 20);
     thrust::host_vector<float> got = C;
     double err = 0;
     bool pass = check_close(ref, got, 1e-2f, &err);

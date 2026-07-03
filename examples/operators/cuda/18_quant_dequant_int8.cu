@@ -28,8 +28,8 @@ int main() {
     auto qp = thrust::raw_pointer_cast(q.data());
     int th = 256, bl = 4096;
     float ms = time_cuda_ms([&] {
-        quant_kernel<<<bl, th>>>(raw(d), qp, scale, n);
-        dequant_kernel<<<bl, th>>>(qp, raw(out), scale, n);
+        quant_kernel<<<bl, th>>>(thrust::raw_pointer_cast(d.data()), qp, scale, n);
+        dequant_kernel<<<bl, th>>>(qp, thrust::raw_pointer_cast(out.data()), scale, n);
     });
     thrust::host_vector<float> got = out;
     double err = 0;

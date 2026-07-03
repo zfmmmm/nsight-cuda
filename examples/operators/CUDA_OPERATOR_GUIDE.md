@@ -1,6 +1,6 @@
 # CUDA 手写算子 Guide
 
-所有 CUDA 示例都使用 `thrust::host_vector` 和 `thrust::device_vector` 管理内存，传 kernel 时使用 `thrust::raw_pointer_cast`。主流程不裸写 `cudaMalloc/cudaFree`。默认编译参数是 `-O3 -lineinfo`，不使用 `-G`。
+所有 CUDA 示例都使用 `thrust::host_vector` 和 `thrust::device_vector` 管理内存，传 kernel 时直接写官方用法 `thrust::raw_pointer_cast(vec.data())`。示例里不再提供 `raw()` 这类二次包装，避免把教学 helper 误认为 Thrust 官方 API。主流程不裸写 `cudaMalloc/cudaFree`。默认编译参数是 `-O3 -lineinfo`，不使用 `-G`。
 
 ## 逐文件说明
 

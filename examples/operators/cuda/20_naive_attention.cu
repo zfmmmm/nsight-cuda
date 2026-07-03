@@ -105,9 +105,9 @@ int main() {
     thrust::device_vector<float> dQ = Q, dK = K, dV = V, dS(L * L), dO(L * D);
     float ms = time_cuda_ms(
         [&] {
-            score_kernel<<<dim3(L, L), 256>>>(raw(dQ), raw(dK), raw(dS), L, D, scale);
-            softmax_kernel<<<L, 256>>>(raw(dS), L);
-            pv_kernel<<<dim3((D + 255) / 256, L), 256>>>(raw(dS), raw(dV), raw(dO), L, D);
+            score_kernel<<<dim3(L, L), 256>>>(thrust::raw_pointer_cast(dQ.data()), thrust::raw_pointer_cast(dK.data()), thrust::raw_pointer_cast(dS.data()), L, D, scale);
+            softmax_kernel<<<L, 256>>>(thrust::raw_pointer_cast(dS.data()), L);
+            pv_kernel<<<dim3((D + 255) / 256, L), 256>>>(thrust::raw_pointer_cast(dS.data()), thrust::raw_pointer_cast(dV.data()), thrust::raw_pointer_cast(dO.data()), L, D);
         },
         3, 30);
     thrust::host_vector<float> got = dO;

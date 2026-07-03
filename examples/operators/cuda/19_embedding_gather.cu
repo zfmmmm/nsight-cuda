@@ -24,7 +24,7 @@ int main() {
     thrust::device_vector<int> di = ids;
     int th = 256, bl = (tokens * dim + th - 1) / th;
     float ms = time_cuda_ms(
-        [&] { embedding_kernel<<<bl, th>>>(raw(dt), raw(di), raw(out), tokens, dim); });
+        [&] { embedding_kernel<<<bl, th>>>(thrust::raw_pointer_cast(dt.data()), thrust::raw_pointer_cast(di.data()), thrust::raw_pointer_cast(out.data()), tokens, dim); });
     thrust::host_vector<float> got = out;
     double err = 0;
     bool pass = check_close(ref, got, 1e-6f, &err);

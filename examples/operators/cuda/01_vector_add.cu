@@ -20,7 +20,7 @@ int main() {
     thrust::device_vector<float> da = ha, db = hb, dc(n);
     int threads = 256, blocks = (n + threads - 1) / threads;
     blocks = std::min(blocks, 4096);
-    auto launch = [&] { vector_add_kernel<<<blocks, threads>>>(raw(da), raw(db), raw(dc), n); };
+    auto launch = [&] { vector_add_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(da.data()), thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(dc.data()), n); };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> hc = dc;
     double err = 0;

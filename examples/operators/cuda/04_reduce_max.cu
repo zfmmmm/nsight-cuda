@@ -34,8 +34,8 @@ int main() {
     float ref = *std::max_element(h.begin(), h.end());
     thrust::device_vector<float> d = h, partial(blocks), out(1);
     auto launch = [&] {
-        reduce_max_kernel<<<blocks, threads>>>(raw(d), raw(partial), n);
-        reduce_max_kernel<<<1, threads>>>(raw(partial), raw(out), blocks);
+        reduce_max_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(partial.data()), n);
+        reduce_max_kernel<<<1, threads>>>(thrust::raw_pointer_cast(partial.data()), thrust::raw_pointer_cast(out.data()), blocks);
     };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = out;

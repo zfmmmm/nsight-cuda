@@ -49,7 +49,7 @@ int main() {
     thrust::device_vector<float> d = h, dw = w, out(n);
     float ms = time_cuda_ms(
         [&] {
-            rmsnorm_kernel<<<rows, 256, 32 * sizeof(float)>>>(raw(d), raw(dw), raw(out), rows, cols,
+            rmsnorm_kernel<<<rows, 256, 32 * sizeof(float)>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dw.data()), thrust::raw_pointer_cast(out.data()), rows, cols,
                                                               1e-6f);
         },
         3, 20);

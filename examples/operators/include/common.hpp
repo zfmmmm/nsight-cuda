@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <thrust/device_vector.h>
+#include <thrust/device_ptr.h>
 #include <thrust/host_vector.h>
 
 #define CUDA_CHECK(call)                                                                           \
@@ -110,20 +111,4 @@ inline void print_result(const char *op, const char *shape, bool pass, double ma
     if (perf > 0.0)
         std::printf("performance: %.3f %s\n", perf, perf_unit);
     std::printf("%s\n", pass ? "PASS" : "FAIL");
-}
-
-inline const float *raw(const thrust::device_vector<float> &v) {
-    return thrust::raw_pointer_cast(v.data());
-}
-
-inline float *raw(thrust::device_vector<float> &v) {
-    return thrust::raw_pointer_cast(v.data());
-}
-
-inline const int *raw(const thrust::device_vector<int> &v) {
-    return thrust::raw_pointer_cast(v.data());
-}
-
-inline int *raw(thrust::device_vector<int> &v) {
-    return thrust::raw_pointer_cast(v.data());
 }

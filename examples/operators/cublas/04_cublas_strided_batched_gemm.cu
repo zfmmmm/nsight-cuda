@@ -23,7 +23,7 @@ int main() {
     float alpha = 1, beta = 0;
     auto launch = [&] {
         CUBLAS_CHECK(cublasSgemmStridedBatched(h, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha,
-                                               raw(dB), N, K * N, raw(dA), K, M * K, &beta, raw(dC),
+                                               thrust::raw_pointer_cast(dB.data()), N, K * N, thrust::raw_pointer_cast(dA.data()), K, M * K, &beta, thrust::raw_pointer_cast(dC.data()),
                                                N, M * N, B));
     };
     launch();

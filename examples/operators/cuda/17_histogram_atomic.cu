@@ -27,20 +27,20 @@ int main() {
     thrust::device_vector<int> dx = hx, hg(bins), hs(bins);
     int th = 256, bl = 512;
     auto zero = [&](thrust::device_vector<int> &v) {
-        CUDA_CHECK(cudaMemset(raw(v), 0, bins * sizeof(int)));
+        CUDA_CHECK(cudaMemset(thrust::raw_pointer_cast(v.data()), 0, bins * sizeof(int)));
     };
     zero(hg);
     float ms1 = time_cuda_ms(
         [&] {
             zero(hg);
-            hist_global<<<bl, th>>>(raw(dx), raw(hg), n, bins);
+            hist_global<<<bl, th>>>(thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(hg.data()), n, bins);
         },
         2, 10);
     zero(hs);
     float ms2 = time_cuda_ms(
         [&] {
             zero(hs);
-            hist_shared<<<bl, th, bins * sizeof(int)>>>(raw(dx), raw(hs), n, bins);
+            hist_shared<<<bl, th, bins * sizeof(int)>>>(thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(hs.data()), n, bins);
         },
         2, 10);
     thrust::host_vector<int> got = hs;

@@ -70,7 +70,7 @@ int main() {
     thrust::device_vector<float> d = h, out(n);
     float ms = time_cuda_ms(
         [&] {
-            row_softmax_kernel<<<rows, 256, 32 * sizeof(float)>>>(raw(d), raw(out), rows, cols);
+            row_softmax_kernel<<<rows, 256, 32 * sizeof(float)>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out.data()), rows, cols);
         },
         3, 20);
     thrust::host_vector<float> got = out;

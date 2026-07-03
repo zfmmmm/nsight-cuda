@@ -21,7 +21,7 @@ int main() {
         href[i] = alpha * hx[i] + href[i];
     thrust::device_vector<float> dx = hx, dy = hy;
     int threads = 256, blocks = std::min((n + threads - 1) / threads, 4096);
-    auto launch = [&] { saxpy_kernel<<<blocks, threads>>>(alpha, raw(dx), raw(dy), n); };
+    auto launch = [&] { saxpy_kernel<<<blocks, threads>>>(alpha, thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(dy.data()), n); };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());
     thrust::host_vector<float> got = dy;

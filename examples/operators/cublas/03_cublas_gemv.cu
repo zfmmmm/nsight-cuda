@@ -20,7 +20,7 @@ int main() {
     float alpha = 1, beta = 0;
     auto launch = [&] {
         CUBLAS_CHECK(
-            cublasSgemv(h, CUBLAS_OP_T, K, M, &alpha, raw(dA), K, raw(dx), 1, &beta, raw(dy), 1));
+            cublasSgemv(h, CUBLAS_OP_T, K, M, &alpha, thrust::raw_pointer_cast(dA.data()), K, thrust::raw_pointer_cast(dx.data()), 1, &beta, thrust::raw_pointer_cast(dy.data()), 1));
     };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());

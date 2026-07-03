@@ -42,7 +42,7 @@ int main() {
     thrust::device_vector<float> d = h, dm(out), da(out);
     int th = 256, bl = (out + th - 1) / th;
     float ms = time_cuda_ms(
-        [&] { pool_kernel<<<bl, th>>>(raw(d), raw(dm), raw(da), N, C, H, W, OH, OW); });
+        [&] { pool_kernel<<<bl, th>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dm.data()), thrust::raw_pointer_cast(da.data()), N, C, H, W, OH, OW); });
     thrust::host_vector<float> gm = dm, ga = da;
     double err = std::max(max_abs_diff(rm, gm), max_abs_diff(ra, ga));
     bool pass = err < 1e-6;

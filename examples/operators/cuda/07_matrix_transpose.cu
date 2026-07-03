@@ -31,9 +31,9 @@ int main() {
     thrust::device_vector<float> d = h, out1(n), out2(n);
     dim3 block(32, 32), grid((cols + 31) / 32, (rows + 31) / 32);
     float ms1 =
-        time_cuda_ms([&] { transpose_naive<<<grid, block>>>(raw(d), raw(out1), rows, cols); });
+        time_cuda_ms([&] { transpose_naive<<<grid, block>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out1.data()), rows, cols); });
     float ms2 =
-        time_cuda_ms([&] { transpose_tiled<<<grid, block>>>(raw(d), raw(out2), rows, cols); });
+        time_cuda_ms([&] { transpose_tiled<<<grid, block>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out2.data()), rows, cols); });
     thrust::host_vector<float> got = out2;
     double err = 0;
     bool pass = check_close(ref, got, 1e-6f, &err);

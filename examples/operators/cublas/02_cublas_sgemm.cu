@@ -20,8 +20,8 @@ int main() {
     CUBLAS_CHECK(cublasCreate(&h));
     float alpha = 1, beta = 0;
     auto launch = [&] {
-        CUBLAS_CHECK(cublasSgemm(h, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha, raw(dB), N, raw(dA),
-                                 K, &beta, raw(dC), N));
+        CUBLAS_CHECK(cublasSgemm(h, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha, thrust::raw_pointer_cast(dB.data()), N, thrust::raw_pointer_cast(dA.data()),
+                                 K, &beta, thrust::raw_pointer_cast(dC.data()), N));
     };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());

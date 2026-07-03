@@ -15,7 +15,7 @@ int main() {
     thrust::device_vector<float> dx = hx, dy = hy;
     cublasHandle_t h;
     CUBLAS_CHECK(cublasCreate(&h));
-    auto launch = [&] { CUBLAS_CHECK(cublasSaxpy(h, n, &alpha, raw(dx), 1, raw(dy), 1)); };
+    auto launch = [&] { CUBLAS_CHECK(cublasSaxpy(h, n, &alpha, thrust::raw_pointer_cast(dx.data()), 1, thrust::raw_pointer_cast(dy.data()), 1)); };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());
     thrust::host_vector<float> got = dy;

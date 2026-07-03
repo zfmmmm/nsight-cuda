@@ -2,8 +2,8 @@
 // 面试考点: activation descriptor
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 03_cudnn_activation_forward.cu -lcudnn -o
 // 03_cudnn_activation_forward 运行: ./03_cudnn_activation_forward
-#include "common.hpp"
 #include <cudnn.h>
+#include "common.hpp"
 int main() {
     const int N = 1, C = 1, H = 1, W = 1 << 20;
     thrust::host_vector<float> hx(W), ref(W);
@@ -22,7 +22,7 @@ int main() {
         cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_RELU, CUDNN_NOT_PROPAGATE_NAN, 0));
     float a = 1, b = 0;
     auto launch = [&] {
-        CUDNN_CHECK(cudnnActivationForward(h, ad, &a, td, raw(x), &b, td, raw(y)));
+        CUDNN_CHECK(cudnnActivationForward(h, ad, &a, td, thrust::raw_pointer_cast(x.data()), &b, td, thrust::raw_pointer_cast(y.data())));
     };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = y;

@@ -47,7 +47,7 @@ int main() {
     thrust::device_vector<float> d = h, dv(rows * K);
     thrust::device_vector<int> di(rows * K);
     float ms =
-        time_cuda_ms([&] { topk4_kernel<<<rows, 256>>>(raw(d), raw(dv), raw(di), rows, cols); });
+        time_cuda_ms([&] { topk4_kernel<<<rows, 256>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dv.data()), thrust::raw_pointer_cast(di.data()), rows, cols); });
     thrust::host_vector<float> gv = dv;
     thrust::host_vector<int> gi = di;
     double err = max_abs_diff(rv, gv);

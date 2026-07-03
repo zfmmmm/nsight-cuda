@@ -25,7 +25,7 @@ int main() {
     fill_random(h, 0, 1);
     std::partial_sum(h.begin(), h.end(), ref.begin());
     thrust::device_vector<float> d = h, out(n);
-    auto launch = [&] { inclusive_scan_1024_kernel<<<1, 1024>>>(raw(d), raw(out), n); };
+    auto launch = [&] { inclusive_scan_1024_kernel<<<1, 1024>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out.data()), n); };
     float ms = time_cuda_ms(launch, 5, 1000);
     thrust::host_vector<float> got = out;
     double err = 0;

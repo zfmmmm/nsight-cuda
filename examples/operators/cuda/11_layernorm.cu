@@ -60,7 +60,7 @@ int main() {
     thrust::device_vector<float> d = h, dg = g, db = b, out(n);
     float ms = time_cuda_ms(
         [&] {
-            layernorm_kernel<<<rows, 256, 64 * sizeof(float)>>>(raw(d), raw(dg), raw(db), raw(out),
+            layernorm_kernel<<<rows, 256, 64 * sizeof(float)>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dg.data()), thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(out.data()),
                                                                 rows, cols, 1e-5f);
         },
         3, 20);

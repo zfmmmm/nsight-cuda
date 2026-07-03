@@ -30,7 +30,7 @@ int main() {
     thrust::device_vector<float> dx = x, db = bias, dr = res, out(n);
     int th = 256, bl = std::min((n + th - 1) / th, 4096);
     float ms = time_cuda_ms(
-        [&] { fused_kernel<<<bl, th>>>(raw(dx), raw(db), raw(dr), raw(out), n, cols); });
+        [&] { fused_kernel<<<bl, th>>>(thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(dr.data()), thrust::raw_pointer_cast(out.data()), n, cols); });
     thrust::host_vector<float> got = out;
     double err = 0;
     bool pass = check_close(ref, got, 1e-5f, &err);

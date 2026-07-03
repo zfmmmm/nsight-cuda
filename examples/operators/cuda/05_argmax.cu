@@ -48,7 +48,7 @@ int main() {
     Pair *p = thrust::raw_pointer_cast(partial.data()), *o = thrust::raw_pointer_cast(out.data());
     (void)o;
     // 第二阶段用专门 CPU 汇总 partial，保持代码面试可读。
-    float ms = time_cuda_ms([&] { argmax_kernel<<<blocks, threads>>>(raw(d), p, n); });
+    float ms = time_cuda_ms([&] { argmax_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(d.data()), p, n); });
     thrust::host_vector<Pair> hp = partial;
     Pair best{-3.402823466e38f, 0};
     for (auto q : hp)

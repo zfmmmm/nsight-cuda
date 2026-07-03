@@ -34,8 +34,8 @@ int main() {
     double ref = std::accumulate(h.begin(), h.end(), 0.0);
     thrust::device_vector<float> d = h, partial(blocks), out(1);
     auto launch = [&] {
-        reduce_sum_kernel<<<blocks, threads>>>(raw(d), raw(partial), n);
-        reduce_sum_kernel<<<1, threads>>>(raw(partial), raw(out), blocks);
+        reduce_sum_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(partial.data()), n);
+        reduce_sum_kernel<<<1, threads>>>(thrust::raw_pointer_cast(partial.data()), thrust::raw_pointer_cast(out.data()), blocks);
     };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = out;

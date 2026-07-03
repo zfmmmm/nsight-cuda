@@ -35,7 +35,7 @@ int main() {
         ref[m] = s;
     }
     thrust::device_vector<float> A = hA, x = hx, y(M);
-    float ms = time_cuda_ms([&] { gemv_kernel<<<M, 256>>>(raw(A), raw(x), raw(y), M, K); });
+    float ms = time_cuda_ms([&] { gemv_kernel<<<M, 256>>>(thrust::raw_pointer_cast(A.data()), thrust::raw_pointer_cast(x.data()), thrust::raw_pointer_cast(y.data()), M, K); });
     thrust::host_vector<float> got = y;
     double err = 0;
     bool pass = check_close(ref, got, 1e-3f, &err);
