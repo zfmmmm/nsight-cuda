@@ -33,7 +33,8 @@ def matmul_kernel(
             mask=(k0 + rk[:, None] < K) & (rn[None, :] < N),
             other=0.0,
         )
-        acc += tl.dot(av, bv)
+        # 面试教学版优先保证和 FP32 baseline 易对齐；默认 TF32 会更快但误差更大。
+        acc += tl.dot(av, bv, input_precision="ieee")
     tl.store(
         c + rm[:, None] * N + rn[None, :],
         acc,
@@ -49,10 +50,13 @@ def main():
     matmul_kernel[(triton.cdiv(M, 16), triton.cdiv(N, 16))](
         a, b, c, M, N, K, BM=16, BN=16, BK=32
     )
-    err = (c - a @ b).abs().max().item()
+    ref = a @ b
+    err = (c - ref).abs().max().item()
+    ok = torch.allclose(c, ref, atol=1e-2, rtol=1e-4)
     print(
-        f"operator: triton_matmul\nGPU kernel: {'PASS' if err < 1e-2 else 'FAIL'}\nmax error: {err}\n{'PASS' if err < 1e-2 else 'FAIL'}"
+        f"operator: triton_matmul\nGPU kernel: {'PASS' if ok else 'FAIL'}\nmax error: {err}\n{'PASS' if ok else 'FAIL'}"
     )
+    raise SystemExit(0 if ok else 1)
 
 
 if __name__ == "__main__":

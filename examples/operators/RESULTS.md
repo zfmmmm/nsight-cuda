@@ -6,7 +6,7 @@
 - CUDA：13.0
 - cuBLAS：可链接运行
 - cuDNN：9.23.2，可编译运行
-- Python：缺 `torch` 和 `triton`
+- Python：`/home/zfm/Desktop/PLAF/.venv` 中 torch 2.7.1+cu128 / triton 3.3.1 可用
 
 ## 总览表
 
@@ -44,4 +44,4 @@
 | `cudnn/03_cudnn_activation_forward.cu` | ReLU forward | cuDNN | activation descriptor | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 03_cudnn_activation_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 03_cudnn_activation_forward` | `./03_cudnn_activation_forward` | PASS | max error 0, 0.0082 ms |
 | `cudnn/04_cudnn_softmax_forward.cu` | softmax forward | cuDNN | softmax mode | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 04_cudnn_softmax_forward.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 04_cudnn_softmax_forward` | `./04_cudnn_softmax_forward` | PASS | max error 1.35042e-08, 0.0184 ms |
 | `cudnn/05_cudnn_batchnorm_inference.cu` | batchnorm inference | cuDNN | BN tensor descriptor | `nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 05_cudnn_batchnorm_inference.cu -L/usr/lib/x86_64-linux-gnu -lcudnn -o 05_cudnn_batchnorm_inference` | `./05_cudnn_batchnorm_inference` | PASS | max error 1.19209e-07, 0.0020 ms |
-| `triton/*.py` | vector/matmul/norm/softmax/FlashAttention 等 | Triton | program/block tensor/mask | 不编译 | `python xx.py` | 未运行 | 本机缺 `torch` 和 `triton`；11 个脚本 AST 解析通过 |
+| `triton/*.py` | vector/matmul/norm/softmax/FlashAttention 等 | Triton | program/block tensor/mask | 不编译 | `/home/zfm/Desktop/PLAF/.venv/bin/python xx.py` | PASS | 11/11 PASS；online softmax max error 6.70552e-08；FlashAttention max error 2.98023e-07 |

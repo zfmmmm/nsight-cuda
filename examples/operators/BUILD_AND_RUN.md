@@ -60,19 +60,31 @@ nvcc -O3 -lineinfo -std=c++17 -I../include -I/usr/include/x86_64-linux-gnu 05_cu
 
 ## Triton
 
-当前本机缺 `torch` 和 `triton`，以下命令未实际运行。安装后运行：
+当前本机系统 Python 缺 `torch` 和 `triton`，但 `/home/zfm/Desktop/PLAF/.venv` 虚拟环境可用：
+
+```bash
+/home/zfm/Desktop/PLAF/.venv/bin/python - <<'PY'
+import torch, triton
+print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name(0))
+print(triton.__version__)
+PY
+```
+
+逐个手动运行：
 
 ```bash
 cd examples/operators/triton
-python 01_vector_add.py
-python 02_fused_elementwise.py
-python 03_reduction_sum.py
-python 04_matmul.py
-python 05_row_softmax.py
-python 06_layernorm.py
-python 07_rmsnorm.py
-python 08_transpose.py
-python 09_quant_dequant.py
-python 10_online_softmax.py
-python 11_flash_attention.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 01_vector_add.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 02_fused_elementwise.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 03_reduction_sum.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 04_matmul.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 05_row_softmax.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 06_layernorm.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 07_rmsnorm.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 08_transpose.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 09_quant_dequant.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 10_online_softmax.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 11_flash_attention.py
 ```
+
+验证结果：11/11 PASS。

@@ -12,7 +12,10 @@ def kernel(
     off = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)
     m = off < n
     v = tl.load(x + off, mask=m) + tl.load(bias + (off % cols), mask=m)
-    g = 0.5 * v * (1.0 + tl.tanh(0.79788456 * (v + 0.044715 * v * v * v)))
+    # Triton 3.3 没有 tl.tanh，用 tanh(x)=2/(1+exp(-2x))-1 写 GELU 近似。
+    t = 0.79788456 * (v + 0.044715 * v * v * v)
+    tanh_t = 2.0 / (1.0 + tl.exp(-2.0 * t)) - 1.0
+    g = 0.5 * v * (1.0 + tanh_t)
     tl.store(y + off, g + tl.load(residual + off, mask=m), mask=m)
 
 

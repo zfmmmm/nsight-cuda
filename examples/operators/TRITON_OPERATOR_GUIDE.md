@@ -18,8 +18,14 @@ Triton 和 CUDA 的思维差异：
 - `06_layernorm.py`：一行一个 program，mean/variance 归约。
 - `07_rmsnorm.py`：LLM 高频 RMSNorm。
 - `08_transpose.py`：block transpose。
-- `09_quant_dequant.py`：per-tensor int8 quant/dequant。
+- `09_quant_dequant.py`：per-tensor quant/dequant 公式。教学版直接输出反量化 fp32，避免 SM120 + Triton 3.3.1 上 int8/inline asm 转换路径的 PTXAS 兼容问题。
 - `10_online_softmax.py`：用 Triton 表达 online softmax 的 running max / normalizer。
 - `11_flash_attention.py`：single-head FlashAttention forward 教学版，按 K/V block 流式更新 `m/l/acc`。
 
-本机当前缺 `torch` 和 `triton`，所以这些脚本未实际运行；已用 Python AST 解析确认语法结构可读。
+本机系统 Python 缺 `torch` 和 `triton`，但 `/home/zfm/Desktop/PLAF/.venv` 可用。已用该虚拟环境实际运行 11/11 PASS：
+
+```bash
+cd examples/operators/triton
+/home/zfm/Desktop/PLAF/.venv/bin/python 10_online_softmax.py
+/home/zfm/Desktop/PLAF/.venv/bin/python 11_flash_attention.py
+```
