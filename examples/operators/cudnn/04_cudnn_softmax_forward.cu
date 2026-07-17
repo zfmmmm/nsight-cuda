@@ -12,15 +12,13 @@ int main() {
     fill_random(hx, -4, 4);
     for (int n = 0; n < N; ++n) {
         float m = -1e30;
-        for (int c = 0; c < C; ++c)
-            m = std::max(m, hx[n * C + c]);
+        for (int c = 0; c < C; ++c) m = std::max(m, hx[n * C + c]);
         float s = 0;
         for (int c = 0; c < C; ++c) {
             ref[n * C + c] = std::exp(hx[n * C + c] - m);
             s += ref[n * C + c];
         }
-        for (int c = 0; c < C; ++c)
-            ref[n * C + c] /= s;
+        for (int c = 0; c < C; ++c) ref[n * C + c] /= s;
     }
     thrust::device_vector<float> x = hx, y(N * C);
     cudnnHandle_t h;
@@ -30,8 +28,17 @@ int main() {
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, C, H, W));
     float a = 1, b = 0;
     auto launch = [&] {
-        CUDNN_CHECK(cudnnSoftmaxForward(h, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE, &a,
-                                        td, thrust::raw_pointer_cast(x.data()), &b, td, thrust::raw_pointer_cast(y.data())));
+        CUDNN_CHECK(cudnnSoftmaxForward(
+            h,
+            CUDNN_SOFTMAX_ACCURATE,
+            CUDNN_SOFTMAX_MODE_INSTANCE,
+            &a,
+            td,
+            thrust::raw_pointer_cast(x.data()),
+            &b,
+            td,
+            thrust::raw_pointer_cast(y.data())
+        ));
     };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = y;

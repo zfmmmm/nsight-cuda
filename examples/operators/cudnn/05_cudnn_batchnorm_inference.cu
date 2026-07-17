@@ -3,6 +3,7 @@
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 05_cudnn_batchnorm_inference.cu -lcudnn -o
 // 05_cudnn_batchnorm_inference 运行: ./05_cudnn_batchnorm_inference
 #include <cudnn.h>
+
 #include "common.hpp"
 int main() {
     const int N = 8, C = 16, H = 16, W = 16, total = N * C * H * W;
@@ -29,9 +30,22 @@ int main() {
     CUDNN_CHECK(cudnnDeriveBNTensorDescriptor(bd, xd, CUDNN_BATCHNORM_SPATIAL));
     float a = 1, b = 0;
     auto launch = [&] {
-        CUDNN_CHECK(cudnnBatchNormalizationForwardInference(handle, CUDNN_BATCHNORM_SPATIAL, &a, &b,
-                                                            xd, thrust::raw_pointer_cast(dx.data()), xd, thrust::raw_pointer_cast(dy.data()), bd, thrust::raw_pointer_cast(ds.data()),
-                                                            thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(dm.data()), thrust::raw_pointer_cast(dv.data()), 1e-5));
+        CUDNN_CHECK(cudnnBatchNormalizationForwardInference(
+            handle,
+            CUDNN_BATCHNORM_SPATIAL,
+            &a,
+            &b,
+            xd,
+            thrust::raw_pointer_cast(dx.data()),
+            xd,
+            thrust::raw_pointer_cast(dy.data()),
+            bd,
+            thrust::raw_pointer_cast(ds.data()),
+            thrust::raw_pointer_cast(db.data()),
+            thrust::raw_pointer_cast(dm.data()),
+            thrust::raw_pointer_cast(dv.data()),
+            1e-5
+        ));
     };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> got = dy;

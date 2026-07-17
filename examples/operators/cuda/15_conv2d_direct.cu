@@ -3,11 +3,22 @@
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 15_conv2d_direct.cu -o 15_conv2d_direct
 // 运行: ./15_conv2d_direct
 #include "common.hpp"
-__global__ void conv2d_kernel(const float *x, const float *w, float *y, int N, int C, int H, int W,
-                              int K, int R, int S, int OH, int OW) {
+__global__ void conv2d_kernel(
+    const float* x,
+    const float* w,
+    float* y,
+    int N,
+    int C,
+    int H,
+    int W,
+    int K,
+    int R,
+    int S,
+    int OH,
+    int OW
+) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x, total = N * K * OH * OW;
-    if (idx >= total)
-        return;
+    if (idx >= total) return;
     int ow = idx % OW, oh = (idx / OW) % OH, k = (idx / (OW * OH)) % K, n = idx / (OW * OH * K);
     float sum = 0;
     for (int c = 0; c < C; ++c)
@@ -37,8 +48,22 @@ int main() {
                 }
     thrust::device_vector<float> dx = hx, dw = hw, dy(out);
     int th = 256, bl = (out + th - 1) / th;
-    float ms = time_cuda_ms(
-        [&] { conv2d_kernel<<<bl, th>>>(thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(dw.data()), thrust::raw_pointer_cast(dy.data()), N, C, H, W, K, R, S, OH, OW); });
+    float ms = time_cuda_ms([&] {
+        conv2d_kernel<<<bl, th>>>(
+            thrust::raw_pointer_cast(dx.data()),
+            thrust::raw_pointer_cast(dw.data()),
+            thrust::raw_pointer_cast(dy.data()),
+            N,
+            C,
+            H,
+            W,
+            K,
+            R,
+            S,
+            OH,
+            OW
+        );
+    });
     thrust::host_vector<float> got = dy;
     double err = 0;
     bool pass = check_close(ref, got, 1e-4f, &err);

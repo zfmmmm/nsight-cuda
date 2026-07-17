@@ -8,17 +8,23 @@
 运行:
 python 11_flash_attention.py
 """
+
 import torch
 import triton
 import triton.language as tl
 
 
 @triton.jit
-def flash_attention_kernel(q, k, v, o,
-                           seqlen: tl.constexpr,
-                           dim: tl.constexpr,
-                           BLOCK_N: tl.constexpr,
-                           BLOCK_D: tl.constexpr):
+def flash_attention_kernel(
+    q,
+    k,
+    v,
+    o,
+    seqlen: tl.constexpr,
+    dim: tl.constexpr,
+    BLOCK_N: tl.constexpr,
+    BLOCK_D: tl.constexpr,
+):
     row = tl.program_id(0)
     offs_d = tl.arange(0, BLOCK_D)
     offs_n = tl.arange(0, BLOCK_N)
@@ -31,9 +37,11 @@ def flash_attention_kernel(q, k, v, o,
 
     for base in range(0, seqlen, BLOCK_N):
         n = base + offs_n
-        kv = tl.load(k + n[:, None] * dim + offs_d[None, :],
-                     mask=(n[:, None] < seqlen) & (offs_d[None, :] < dim),
-                     other=0.0)
+        kv = tl.load(
+            k + n[:, None] * dim + offs_d[None, :],
+            mask=(n[:, None] < seqlen) & (offs_d[None, :] < dim),
+            other=0.0,
+        )
         scores = tl.sum(kv * qv[None, :], axis=1) * scale
         scores = tl.where(n < seqlen, scores, -float("inf"))
 
@@ -43,9 +51,11 @@ def flash_attention_kernel(q, k, v, o,
         p = tl.exp(scores - m_new)
         tile_l = tl.sum(p, axis=0)
 
-        vv = tl.load(v + n[:, None] * dim + offs_d[None, :],
-                     mask=(n[:, None] < seqlen) & (offs_d[None, :] < dim),
-                     other=0.0)
+        vv = tl.load(
+            v + n[:, None] * dim + offs_d[None, :],
+            mask=(n[:, None] < seqlen) & (offs_d[None, :] < dim),
+            other=0.0,
+        )
         acc = acc * alpha + tl.sum(p[:, None] * vv, axis=0)
         l = l * alpha + tile_l
         m = m_new
@@ -61,7 +71,7 @@ def main():
     v = torch.randn((L, D), device="cuda")
     o = torch.empty_like(q)
     flash_attention_kernel[(L,)](q, k, v, o, L, D, BLOCK_N=32, BLOCK_D=64)
-    ref = torch.softmax(q @ k.T / (D ** 0.5), dim=1) @ v
+    ref = torch.softmax(q @ k.T / (D**0.5), dim=1) @ v
     err = (o - ref).abs().max().item()
     ok = err < 2e-4
     print("operator: triton_flash_attention_forward_teaching")

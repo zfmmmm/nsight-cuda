@@ -6,7 +6,7 @@
 __device__ float dgelu(float x) {
     return 0.5f * x * (1 + tanhf(0.79788456f * (x + 0.044715f * x * x * x)));
 }
-__global__ void act_kernel(const float *x, float *relu, float *gelu, float *silu, int n) {
+__global__ void act_kernel(const float* x, float* relu, float* gelu, float* silu, int n) {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x) {
         float v = x[i];
         relu[i] = fmaxf(v, 0);
@@ -26,11 +26,26 @@ int main() {
     }
     thrust::device_vector<float> d = h, dr(n), dg(n), ds(n);
     int th = 256, bl = 4096;
-    float ms = time_cuda_ms([&] { act_kernel<<<bl, th>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dr.data()), thrust::raw_pointer_cast(dg.data()), thrust::raw_pointer_cast(ds.data()), n); });
+    float ms = time_cuda_ms([&] {
+        act_kernel<<<bl, th>>>(
+            thrust::raw_pointer_cast(d.data()),
+            thrust::raw_pointer_cast(dr.data()),
+            thrust::raw_pointer_cast(dg.data()),
+            thrust::raw_pointer_cast(ds.data()),
+            n
+        );
+    });
     thrust::host_vector<float> gr = dr, gg = dg, gs = ds;
     double e1 = max_abs_diff(r, gr), e2 = max_abs_diff(g, gg), e3 = max_abs_diff(s, gs);
     bool pass = e1 < 1e-6 && e2 < 1e-5 && e3 < 1e-6;
-    print_result("relu_gelu_silu", "n=16777216", pass, std::max(e1, std::max(e2, e3)), ms,
-                 4.0 * n * sizeof(float) / ms / 1e6, "GB/s");
+    print_result(
+        "relu_gelu_silu",
+        "n=16777216",
+        pass,
+        std::max(e1, std::max(e2, e3)),
+        ms,
+        4.0 * n * sizeof(float) / ms / 1e6,
+        "GB/s"
+    );
     return pass ? 0 : 1;
 }

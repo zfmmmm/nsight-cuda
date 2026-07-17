@@ -10,8 +10,7 @@ int main() {
     fill_random(x);
     for (int m = 0; m < M; ++m) {
         float s = 0;
-        for (int k = 0; k < K; ++k)
-            s += A[m * K + k] * x[k];
+        for (int k = 0; k < K; ++k) s += A[m * K + k] * x[k];
         ref[m] = s;
     }
     thrust::device_vector<float> dA = A, dx = x, dy(M);
@@ -19,8 +18,20 @@ int main() {
     CUBLAS_CHECK(cublasCreate(&h));
     float alpha = 1, beta = 0;
     auto launch = [&] {
-        CUBLAS_CHECK(
-            cublasSgemv(h, CUBLAS_OP_T, K, M, &alpha, thrust::raw_pointer_cast(dA.data()), K, thrust::raw_pointer_cast(dx.data()), 1, &beta, thrust::raw_pointer_cast(dy.data()), 1));
+        CUBLAS_CHECK(cublasSgemv(
+            h,
+            CUBLAS_OP_T,
+            K,
+            M,
+            &alpha,
+            thrust::raw_pointer_cast(dA.data()),
+            K,
+            thrust::raw_pointer_cast(dx.data()),
+            1,
+            &beta,
+            thrust::raw_pointer_cast(dy.data()),
+            1
+        ));
     };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());

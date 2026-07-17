@@ -6,8 +6,9 @@
 __device__ float gelu(float x) {
     return 0.5f * x * (1.0f + tanhf(0.79788456f * (x + 0.044715f * x * x * x)));
 }
-__global__ void fused_kernel(const float *x, const float *bias, const float *res, float *y, int n,
-                             int cols) {
+__global__ void fused_kernel(
+    const float* x, const float* bias, const float* res, float* y, int n, int cols
+) {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x) {
         float v = x[i] + bias[i % cols];
         float r = fmaxf(v, 0.0f);
@@ -29,12 +30,21 @@ int main() {
     }
     thrust::device_vector<float> dx = x, db = bias, dr = res, out(n);
     int th = 256, bl = std::min((n + th - 1) / th, 4096);
-    float ms = time_cuda_ms(
-        [&] { fused_kernel<<<bl, th>>>(thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(dr.data()), thrust::raw_pointer_cast(out.data()), n, cols); });
+    float ms = time_cuda_ms([&] {
+        fused_kernel<<<bl, th>>>(
+            thrust::raw_pointer_cast(dx.data()),
+            thrust::raw_pointer_cast(db.data()),
+            thrust::raw_pointer_cast(dr.data()),
+            thrust::raw_pointer_cast(out.data()),
+            n,
+            cols
+        );
+    });
     thrust::host_vector<float> got = out;
     double err = 0;
     bool pass = check_close(ref, got, 1e-5f, &err);
-    print_result("fused_elementwise", "4096x1024", pass, err, ms,
-                 n * sizeof(float) * 4.0 / ms / 1e6, "GB/s");
+    print_result(
+        "fused_elementwise", "4096x1024", pass, err, ms, n * sizeof(float) * 4.0 / ms / 1e6, "GB/s"
+    );
     return pass ? 0 : 1;
 }

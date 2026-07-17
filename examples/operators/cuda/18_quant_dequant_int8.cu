@@ -3,14 +3,14 @@
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 18_quant_dequant_int8.cu -o
 // 18_quant_dequant_int8 运行: ./18_quant_dequant_int8
 #include "common.hpp"
-__global__ void quant_kernel(const float *x, signed char *q, float scale, int n) {
+__global__ void quant_kernel(const float* x, signed char* q, float scale, int n) {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x) {
         int v = lrintf(x[i] / scale);
         v = max(-128, min(127, v));
         q[i] = (signed char)v;
     }
 }
-__global__ void dequant_kernel(const signed char *q, float *y, float scale, int n) {
+__global__ void dequant_kernel(const signed char* q, float* y, float scale, int n) {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x)
         y[i] = float(q[i]) * scale;
 }
@@ -34,7 +34,14 @@ int main() {
     thrust::host_vector<float> got = out;
     double err = 0;
     bool pass = check_close(ref, got, 1e-6f, &err);
-    print_result("quant_dequant_int8", "n=16777216,scale=0.02", pass, err, ms,
-                 (n * (sizeof(float) + 1 + sizeof(float))) / ms / 1e6, "GB/s");
+    print_result(
+        "quant_dequant_int8",
+        "n=16777216,scale=0.02",
+        pass,
+        err,
+        ms,
+        (n * (sizeof(float) + 1 + sizeof(float))) / ms / 1e6,
+        "GB/s"
+    );
     return pass ? 0 : 1;
 }

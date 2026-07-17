@@ -3,7 +3,7 @@
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 21_topk_small_k.cu -o 21_topk_small_k
 // 运行: ./21_topk_small_k
 #include "common.hpp"
-__global__ void topk4_kernel(const float *x, float *vals, int *idx, int rows, int cols) {
+__global__ void topk4_kernel(const float* x, float* vals, int* idx, int rows, int cols) {
     int r = blockIdx.x, t = threadIdx.x;
     if (t == 0) {
         float tv[4] = {-3.4e38f, -3.4e38f, -3.4e38f, -3.4e38f};
@@ -35,10 +35,10 @@ int main() {
     fill_random(h);
     for (int r = 0; r < rows; ++r) {
         std::vector<std::pair<float, int>> v;
-        for (int c = 0; c < cols; ++c)
-            v.push_back({h[r * cols + c], c});
-        std::partial_sort(v.begin(), v.begin() + K, v.end(),
-                          [](auto &a, auto &b) { return a.first > b.first; });
+        for (int c = 0; c < cols; ++c) v.push_back({h[r * cols + c], c});
+        std::partial_sort(v.begin(), v.begin() + K, v.end(), [](auto& a, auto& b) {
+            return a.first > b.first;
+        });
         for (int k = 0; k < K; ++k) {
             rv[r * K + k] = v[k].first;
             ri[r * K + k] = v[k].second;
@@ -46,15 +46,28 @@ int main() {
     }
     thrust::device_vector<float> d = h, dv(rows * K);
     thrust::device_vector<int> di(rows * K);
-    float ms =
-        time_cuda_ms([&] { topk4_kernel<<<rows, 256>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dv.data()), thrust::raw_pointer_cast(di.data()), rows, cols); });
+    float ms = time_cuda_ms([&] {
+        topk4_kernel<<<rows, 256>>>(
+            thrust::raw_pointer_cast(d.data()),
+            thrust::raw_pointer_cast(dv.data()),
+            thrust::raw_pointer_cast(di.data()),
+            rows,
+            cols
+        );
+    });
     thrust::host_vector<float> gv = dv;
     thrust::host_vector<int> gi = di;
     double err = max_abs_diff(rv, gv);
     bool pass = err < 1e-6;
-    for (int i = 0; i < rows * K; ++i)
-        pass &= (ri[i] == gi[i]);
-    print_result("topk_small_k", "rows=1024,cols=1024,K=4", pass, err, ms,
-                 n * sizeof(float) / ms / 1e6, "GB/s");
+    for (int i = 0; i < rows * K; ++i) pass &= (ri[i] == gi[i]);
+    print_result(
+        "topk_small_k",
+        "rows=1024,cols=1024,K=4",
+        pass,
+        err,
+        ms,
+        n * sizeof(float) / ms / 1e6,
+        "GB/s"
+    );
     return pass ? 0 : 1;
 }

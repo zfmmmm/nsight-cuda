@@ -4,23 +4,18 @@
 // 运行: ./09_gemv
 #include "common.hpp"
 
-__global__ void gemv_kernel(const float *A, const float *x, float *y, int M, int K) {
+__global__ void gemv_kernel(const float* A, const float* x, float* y, int M, int K) {
     int row = blockIdx.x, tid = threadIdx.x;
     float sum = 0;
-    for (int k = tid; k < K; k += blockDim.x)
-        sum += A[row * K + k] * x[k];
-    for (int off = 16; off > 0; off >>= 1)
-        sum += __shfl_down_sync(0xffffffff, sum, off);
+    for (int k = tid; k < K; k += blockDim.x) sum += A[row * K + k] * x[k];
+    for (int off = 16; off > 0; off >>= 1) sum += __shfl_down_sync(0xffffffff, sum, off);
     __shared__ float warp_part[32];
-    if ((tid & 31) == 0)
-        warp_part[tid >> 5] = sum;
+    if ((tid & 31) == 0) warp_part[tid >> 5] = sum;
     __syncthreads();
     sum = (tid < blockDim.x / 32) ? warp_part[tid] : 0;
     if (tid < 32) {
-        for (int off = 16; off > 0; off >>= 1)
-            sum += __shfl_down_sync(0xffffffff, sum, off);
-        if (tid == 0)
-            y[row] = sum;
+        for (int off = 16; off > 0; off >>= 1) sum += __shfl_down_sync(0xffffffff, sum, off);
+        if (tid == 0) y[row] = sum;
     }
 }
 int main() {
@@ -30,12 +25,19 @@ int main() {
     fill_random(hx, -1, 1, 456);
     for (int m = 0; m < M; ++m) {
         float s = 0;
-        for (int k = 0; k < K; ++k)
-            s += hA[m * K + k] * hx[k];
+        for (int k = 0; k < K; ++k) s += hA[m * K + k] * hx[k];
         ref[m] = s;
     }
     thrust::device_vector<float> A = hA, x = hx, y(M);
-    float ms = time_cuda_ms([&] { gemv_kernel<<<M, 256>>>(thrust::raw_pointer_cast(A.data()), thrust::raw_pointer_cast(x.data()), thrust::raw_pointer_cast(y.data()), M, K); });
+    float ms = time_cuda_ms([&] {
+        gemv_kernel<<<M, 256>>>(
+            thrust::raw_pointer_cast(A.data()),
+            thrust::raw_pointer_cast(x.data()),
+            thrust::raw_pointer_cast(y.data()),
+            M,
+            K
+        );
+    });
     thrust::host_vector<float> got = y;
     double err = 0;
     bool pass = check_close(ref, got, 1e-3f, &err);

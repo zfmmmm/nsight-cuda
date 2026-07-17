@@ -4,12 +4,12 @@
 // 运行: ./11_layernorm
 #include "common.hpp"
 __inline__ __device__ float wsum(float v) {
-    for (int o = 16; o > 0; o >>= 1)
-        v += __shfl_down_sync(0xffffffff, v, o);
+    for (int o = 16; o > 0; o >>= 1) v += __shfl_down_sync(0xffffffff, v, o);
     return v;
 }
-__global__ void layernorm_kernel(const float *x, const float *g, const float *b, float *y, int rows,
-                                 int cols, float eps) {
+__global__ void layernorm_kernel(
+    const float* x, const float* g, const float* b, float* y, int rows, int cols, float eps
+) {
     int r = blockIdx.x, t = threadIdx.x;
     extern __shared__ float sm[];
     float s = 0, ss = 0;
@@ -60,14 +60,30 @@ int main() {
     thrust::device_vector<float> d = h, dg = g, db = b, out(n);
     float ms = time_cuda_ms(
         [&] {
-            layernorm_kernel<<<rows, 256, 64 * sizeof(float)>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dg.data()), thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(out.data()),
-                                                                rows, cols, 1e-5f);
+            layernorm_kernel<<<rows, 256, 64 * sizeof(float)>>>(
+                thrust::raw_pointer_cast(d.data()),
+                thrust::raw_pointer_cast(dg.data()),
+                thrust::raw_pointer_cast(db.data()),
+                thrust::raw_pointer_cast(out.data()),
+                rows,
+                cols,
+                1e-5f
+            );
         },
-        3, 20);
+        3,
+        20
+    );
     thrust::host_vector<float> got = out;
     double err = 0;
     bool pass = check_close(ref, got, 1e-4f, &err);
-    print_result("layernorm", "rows=2048,cols=1024", pass, err, ms,
-                 n * sizeof(float) * 2.0 / ms / 1e6, "GB/s");
+    print_result(
+        "layernorm",
+        "rows=2048,cols=1024",
+        pass,
+        err,
+        ms,
+        n * sizeof(float) * 2.0 / ms / 1e6,
+        "GB/s"
+    );
     return pass ? 0 : 1;
 }

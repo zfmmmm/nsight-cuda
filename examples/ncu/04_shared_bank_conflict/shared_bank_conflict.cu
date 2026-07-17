@@ -1,8 +1,8 @@
-#include "cuda_utils.h"
-
 #include <cstdio>
 
-__global__ void bad_shared_bank_conflict_kernel(float *out, const float *in, int n) {
+#include "cuda_utils.h"
+
+__global__ void bad_shared_bank_conflict_kernel(float* out, const float* in, int n) {
     __shared__ volatile float tile[256 * 32];
     int tid = threadIdx.x;
     int gid = blockIdx.x * blockDim.x + tid;
@@ -18,7 +18,7 @@ __global__ void bad_shared_bank_conflict_kernel(float *out, const float *in, int
     }
 }
 
-__global__ void good_shared_padded_kernel(float *out, const float *in, int n) {
+__global__ void good_shared_padded_kernel(float* out, const float* in, int n) {
     __shared__ volatile float tile[256 * 33];
     int tid = threadIdx.x;
     int gid = blockIdx.x * blockDim.x + tid;
@@ -34,7 +34,7 @@ __global__ void good_shared_padded_kernel(float *out, const float *in, int n) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 20;

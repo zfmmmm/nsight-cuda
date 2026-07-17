@@ -1,4 +1,4 @@
-BasedOnStyle: LLVM
+BasedOnStyle: Google
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
@@ -7,3 +7,10 @@ AllowShortFunctionsOnASingleLine: Empty
 BreakBeforeBraces: Attach
 SortIncludes: false
 IndentCaseLabels: true
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+BinPackArguments: false
+BinPackParameters: false

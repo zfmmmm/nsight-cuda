@@ -1,23 +1,22 @@
-#include "cuda_utils.h"
-
-#include <nvtx3/nvToolsExt.h>
-
 #include <chrono>
 #include <cstdio>
+#include <nvtx3/nvToolsExt.h>
 #include <thread>
 
-__global__ void tiny_kernel(float *x, int n) {
+#include "cuda_utils.h"
+
+__global__ void tiny_kernel(float* x, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         x[i] += 1.0f;
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 20;
-    float *x = nullptr;
+    float* x = nullptr;
     CHECK_CUDA(cudaMalloc(&x, n * sizeof(float)));
     CHECK_CUDA(cudaMemset(x, 0, n * sizeof(float)));
 

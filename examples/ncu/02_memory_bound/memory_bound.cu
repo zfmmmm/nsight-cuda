@@ -1,15 +1,15 @@
-#include "cuda_utils.h"
-
 #include <cstdio>
 
-__global__ void bad_memory_bound_kernel(float *out, const float *a, const float *b, int n) {
+#include "cuda_utils.h"
+
+__global__ void bad_memory_bound_kernel(float* out, const float* a, const float* b, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         out[i] = a[i] + b[i];
     }
 }
 
-__global__ void good_more_work_per_byte_kernel(float *out, const float *a, const float *b, int n) {
+__global__ void good_more_work_per_byte_kernel(float* out, const float* a, const float* b, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float x = a[i] + b[i];
@@ -21,7 +21,7 @@ __global__ void good_more_work_per_byte_kernel(float *out, const float *a, const
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 26;

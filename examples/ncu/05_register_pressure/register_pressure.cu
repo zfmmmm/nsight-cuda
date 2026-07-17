@@ -1,8 +1,8 @@
-#include "cuda_utils.h"
-
 #include <cstdio>
 
-__global__ void bad_register_pressure_kernel(float *out, const float *in, int n) {
+#include "cuda_utils.h"
+
+__global__ void bad_register_pressure_kernel(float* out, const float* in, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float x = in[i];
@@ -38,7 +38,7 @@ __global__ void bad_register_pressure_kernel(float *out, const float *in, int n)
     }
 }
 
-__global__ void good_lower_register_kernel(float *out, const float *in, int n) {
+__global__ void good_lower_register_kernel(float* out, const float* in, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float x = in[i];
@@ -50,7 +50,7 @@ __global__ void good_lower_register_kernel(float *out, const float *in, int n) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 20;

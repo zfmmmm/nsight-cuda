@@ -1,8 +1,8 @@
-#include "cuda_utils.h"
-
 #include <cstdio>
 
-__global__ void bad_uncoalesced_access_kernel(float *out, const float *in, int rows, int cols) {
+#include "cuda_utils.h"
+
+__global__ void bad_uncoalesced_access_kernel(float* out, const float* in, int rows, int cols) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     int col = blockIdx.y;
     if (row < rows && col < cols) {
@@ -10,14 +10,14 @@ __global__ void bad_uncoalesced_access_kernel(float *out, const float *in, int r
     }
 }
 
-__global__ void good_coalesced_access_kernel(float *out, const float *in, int n) {
+__global__ void good_coalesced_access_kernel(float* out, const float* in, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         out[i] = in[i] * 2.0f;
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int rows = 4096;

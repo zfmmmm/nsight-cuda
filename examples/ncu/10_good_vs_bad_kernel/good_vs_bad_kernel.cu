@@ -1,8 +1,8 @@
-#include "cuda_utils.h"
-
 #include <cstdio>
 
-__global__ void bad_stride_copy_kernel(float *out, const float *in, int n, int stride) {
+#include "cuda_utils.h"
+
+__global__ void bad_stride_copy_kernel(float* out, const float* in, int n, int stride) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         int src = (i * stride) & (n - 1);
@@ -10,7 +10,7 @@ __global__ void bad_stride_copy_kernel(float *out, const float *in, int n, int s
     }
 }
 
-__global__ void good_contiguous_copy_kernel(float *out, const float *in, int n) {
+__global__ void good_contiguous_copy_kernel(float* out, const float* in, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float x = in[i];
@@ -18,7 +18,7 @@ __global__ void good_contiguous_copy_kernel(float *out, const float *in, int n) 
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 24;

@@ -10,12 +10,21 @@ int main() {
     fill_random(hx);
     fill_random(hy, -2, 2);
     ref = hy;
-    for (int i = 0; i < n; ++i)
-        ref[i] = alpha * hx[i] + ref[i];
+    for (int i = 0; i < n; ++i) ref[i] = alpha * hx[i] + ref[i];
     thrust::device_vector<float> dx = hx, dy = hy;
     cublasHandle_t h;
     CUBLAS_CHECK(cublasCreate(&h));
-    auto launch = [&] { CUBLAS_CHECK(cublasSaxpy(h, n, &alpha, thrust::raw_pointer_cast(dx.data()), 1, thrust::raw_pointer_cast(dy.data()), 1)); };
+    auto launch = [&] {
+        CUBLAS_CHECK(cublasSaxpy(
+            h,
+            n,
+            &alpha,
+            thrust::raw_pointer_cast(dx.data()),
+            1,
+            thrust::raw_pointer_cast(dy.data()),
+            1
+        ));
+    };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());
     thrust::host_vector<float> got = dy;
@@ -24,7 +33,8 @@ int main() {
     dy = hy;
     float ms = time_cuda_ms(launch);
     CUBLAS_CHECK(cublasDestroy(h));
-    print_result("cublas_saxpy", "n=16777216", pass, err, ms, 3.0 * n * sizeof(float) / ms / 1e6,
-                 "GB/s");
+    print_result(
+        "cublas_saxpy", "n=16777216", pass, err, ms, 3.0 * n * sizeof(float) / ms / 1e6, "GB/s"
+    );
     return pass ? 0 : 1;
 }

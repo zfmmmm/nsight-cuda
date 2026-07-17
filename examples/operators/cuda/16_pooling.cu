@@ -3,11 +3,11 @@
 // 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 16_pooling.cu -o 16_pooling
 // 运行: ./16_pooling
 #include "common.hpp"
-__global__ void pool_kernel(const float *x, float *mx, float *avg, int N, int C, int H, int W,
-                            int OH, int OW) {
+__global__ void pool_kernel(
+    const float* x, float* mx, float* avg, int N, int C, int H, int W, int OH, int OW
+) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x, total = N * C * OH * OW;
-    if (idx >= total)
-        return;
+    if (idx >= total) return;
     int ow = idx % OW, oh = (idx / OW) % OH, c = (idx / (OW * OH)) % C, n = idx / (OW * OH * C);
     float m = -3.4e38f, s = 0;
     for (int r = 0; r < 2; ++r)
@@ -41,12 +41,30 @@ int main() {
                 }
     thrust::device_vector<float> d = h, dm(out), da(out);
     int th = 256, bl = (out + th - 1) / th;
-    float ms = time_cuda_ms(
-        [&] { pool_kernel<<<bl, th>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(dm.data()), thrust::raw_pointer_cast(da.data()), N, C, H, W, OH, OW); });
+    float ms = time_cuda_ms([&] {
+        pool_kernel<<<bl, th>>>(
+            thrust::raw_pointer_cast(d.data()),
+            thrust::raw_pointer_cast(dm.data()),
+            thrust::raw_pointer_cast(da.data()),
+            N,
+            C,
+            H,
+            W,
+            OH,
+            OW
+        );
+    });
     thrust::host_vector<float> gm = dm, ga = da;
     double err = std::max(max_abs_diff(rm, gm), max_abs_diff(ra, ga));
     bool pass = err < 1e-6;
-    print_result("pooling_max_avg", "N=8,C=16,H=W=64,k=2,s=2", pass, err, ms,
-                 out * 4 * sizeof(float) / ms / 1e6, "GB/s");
+    print_result(
+        "pooling_max_avg",
+        "N=8,C=16,H=W=64,k=2,s=2",
+        pass,
+        err,
+        ms,
+        out * 4 * sizeof(float) / ms / 1e6,
+        "GB/s"
+    );
     return pass ? 0 : 1;
 }

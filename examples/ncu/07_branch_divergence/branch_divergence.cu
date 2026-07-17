@@ -1,25 +1,23 @@
-#include "cuda_utils.h"
-
 #include <cstdio>
 
-__global__ void bad_branch_divergence_kernel(float *out, const float *in, int n) {
+#include "cuda_utils.h"
+
+__global__ void bad_branch_divergence_kernel(float* out, const float* in, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float x = in[i];
         if ((threadIdx.x & 1) == 0) {
 #pragma unroll 1
-            for (int r = 0; r < 256; ++r)
-                x = fmaf(x, 1.0001f, 0.1f);
+            for (int r = 0; r < 256; ++r) x = fmaf(x, 1.0001f, 0.1f);
         } else {
 #pragma unroll 1
-            for (int r = 0; r < 16; ++r)
-                x = fmaf(x, 0.9999f, 0.2f);
+            for (int r = 0; r < 16; ++r) x = fmaf(x, 0.9999f, 0.2f);
         }
         out[i] = x;
     }
 }
 
-__global__ void good_less_divergent_kernel(float *out, const float *in, int n) {
+__global__ void good_less_divergent_kernel(float* out, const float* in, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float x = in[i];
@@ -31,7 +29,7 @@ __global__ void good_less_divergent_kernel(float *out, const float *in, int n) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 22;

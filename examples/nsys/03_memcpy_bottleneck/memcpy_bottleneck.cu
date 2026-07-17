@@ -1,25 +1,24 @@
-#include "cuda_utils.h"
-
-#include <nvtx3/nvToolsExt.h>
-
 #include <cstdio>
+#include <nvtx3/nvToolsExt.h>
 #include <vector>
 
-__global__ void scale_kernel(float *x, int n) {
+#include "cuda_utils.h"
+
+__global__ void scale_kernel(float* x, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         x[i] = x[i] * 1.0001f + 1.0f;
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 24;
     constexpr int bytes = n * sizeof(float);
     constexpr int iters = 16;
 
-    float *d = nullptr;
+    float* d = nullptr;
     CHECK_CUDA(cudaMalloc(&d, bytes));
     int threads = 256;
     int blocks = (n + threads - 1) / threads;
@@ -40,7 +39,7 @@ int main(int argc, char **argv) {
         }
         std::printf("mode=bad_pageable_sync_copy result=%f\n", h[0]);
     } else {
-        float *h = nullptr;
+        float* h = nullptr;
         CHECK_CUDA(cudaMallocHost(&h, bytes));
         for (int i = 0; i < n; ++i) {
             h[i] = 1.0f;

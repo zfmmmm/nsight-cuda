@@ -1,11 +1,10 @@
-#include "cuda_utils.h"
-
-#include <nvtx3/nvToolsExt.h>
-
 #include <cstdio>
+#include <nvtx3/nvToolsExt.h>
 #include <vector>
 
-__global__ void saxpy_kernel(float *y, const float *x, float a, int n) {
+#include "cuda_utils.h"
+
+__global__ void saxpy_kernel(float* y, const float* x, float a, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         y[i] = a * x[i] + y[i];
@@ -21,8 +20,8 @@ int main() {
     std::vector<float> hx(n, 1.0f), hy(n, 2.0f);
     nvtxRangePop();
 
-    float *dx = nullptr;
-    float *dy = nullptr;
+    float* dx = nullptr;
+    float* dy = nullptr;
     nvtxRangePushA("app/cuda_malloc");
     CHECK_CUDA(cudaMalloc(&dx, bytes));
     CHECK_CUDA(cudaMalloc(&dy, bytes));

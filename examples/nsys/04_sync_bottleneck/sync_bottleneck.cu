@@ -1,10 +1,9 @@
-#include "cuda_utils.h"
-
+#include <cstdio>
 #include <nvtx3/nvToolsExt.h>
 
-#include <cstdio>
+#include "cuda_utils.h"
 
-__global__ void medium_kernel(float *x, int n, int rounds) {
+__global__ void medium_kernel(float* x, int n, int rounds) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n) {
         float v = x[i];
@@ -15,12 +14,12 @@ __global__ void medium_kernel(float *x, int n, int rounds) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     print_device_info();
     bool good = argc > 1 && std::string(argv[1]) == "good";
     constexpr int n = 1 << 22;
     constexpr int iters = 40;
-    float *x = nullptr;
+    float* x = nullptr;
     CHECK_CUDA(cudaMalloc(&x, n * sizeof(float)));
     CHECK_CUDA(cudaMemset(x, 0, n * sizeof(float)));
 

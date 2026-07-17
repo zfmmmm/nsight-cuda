@@ -4,7 +4,7 @@
 // 运行: ./06_prefix_scan
 #include "common.hpp"
 
-__global__ void inclusive_scan_1024_kernel(const float *x, float *y, int n) {
+__global__ void inclusive_scan_1024_kernel(const float* x, float* y, int n) {
     __shared__ float smem[1024];
     int t = threadIdx.x;
     smem[t] = (t < n) ? x[t] : 0.0f;
@@ -15,8 +15,7 @@ __global__ void inclusive_scan_1024_kernel(const float *x, float *y, int n) {
         smem[t] += v;
         __syncthreads();
     }
-    if (t < n)
-        y[t] = smem[t];
+    if (t < n) y[t] = smem[t];
 }
 
 int main() {
@@ -25,7 +24,11 @@ int main() {
     fill_random(h, 0, 1);
     std::partial_sum(h.begin(), h.end(), ref.begin());
     thrust::device_vector<float> d = h, out(n);
-    auto launch = [&] { inclusive_scan_1024_kernel<<<1, 1024>>>(thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out.data()), n); };
+    auto launch = [&] {
+        inclusive_scan_1024_kernel<<<1, 1024>>>(
+            thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(out.data()), n
+        );
+    };
     float ms = time_cuda_ms(launch, 5, 1000);
     thrust::host_vector<float> got = out;
     double err = 0;

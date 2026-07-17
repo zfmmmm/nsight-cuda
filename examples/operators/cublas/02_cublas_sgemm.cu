@@ -11,8 +11,7 @@ int main() {
     for (int m = 0; m < M; ++m)
         for (int n = 0; n < N; ++n) {
             float s = 0;
-            for (int k = 0; k < K; ++k)
-                s += A[m * K + k] * B[k * N + n];
+            for (int k = 0; k < K; ++k) s += A[m * K + k] * B[k * N + n];
             ref[m * N + n] = s;
         }
     thrust::device_vector<float> dA = A, dB = B, dC(M * N);
@@ -20,8 +19,22 @@ int main() {
     CUBLAS_CHECK(cublasCreate(&h));
     float alpha = 1, beta = 0;
     auto launch = [&] {
-        CUBLAS_CHECK(cublasSgemm(h, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha, thrust::raw_pointer_cast(dB.data()), N, thrust::raw_pointer_cast(dA.data()),
-                                 K, &beta, thrust::raw_pointer_cast(dC.data()), N));
+        CUBLAS_CHECK(cublasSgemm(
+            h,
+            CUBLAS_OP_N,
+            CUBLAS_OP_N,
+            N,
+            M,
+            K,
+            &alpha,
+            thrust::raw_pointer_cast(dB.data()),
+            N,
+            thrust::raw_pointer_cast(dA.data()),
+            K,
+            &beta,
+            thrust::raw_pointer_cast(dC.data()),
+            N
+        ));
     };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());
@@ -30,7 +43,14 @@ int main() {
     bool pass = check_close(ref, got, 1e-2f, &err);
     float ms = time_cuda_ms(launch, 3, 20);
     CUBLAS_CHECK(cublasDestroy(h));
-    print_result("cublas_sgemm", "M=N=K=512 row-major API side", pass, err, ms,
-                 2.0 * M * N * K / ms / 1e6, "GFLOP/s");
+    print_result(
+        "cublas_sgemm",
+        "M=N=K=512 row-major API side",
+        pass,
+        err,
+        ms,
+        2.0 * M * N * K / ms / 1e6,
+        "GFLOP/s"
+    );
     return pass ? 0 : 1;
 }

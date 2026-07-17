@@ -4,7 +4,7 @@
 // 运行: ./01_vector_add
 #include "common.hpp"
 
-__global__ void vector_add_kernel(const float *a, const float *b, float *c, int n) {
+__global__ void vector_add_kernel(const float* a, const float* b, float* c, int n) {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x) {
         c[i] = a[i] + b[i];
     }
@@ -15,12 +15,18 @@ int main() {
     thrust::host_vector<float> ha(n), hb(n), hc_ref(n);
     fill_random(ha);
     fill_random(hb, -2, 2, 456);
-    for (int i = 0; i < n; ++i)
-        hc_ref[i] = ha[i] + hb[i];
+    for (int i = 0; i < n; ++i) hc_ref[i] = ha[i] + hb[i];
     thrust::device_vector<float> da = ha, db = hb, dc(n);
     int threads = 256, blocks = (n + threads - 1) / threads;
     blocks = std::min(blocks, 4096);
-    auto launch = [&] { vector_add_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(da.data()), thrust::raw_pointer_cast(db.data()), thrust::raw_pointer_cast(dc.data()), n); };
+    auto launch = [&] {
+        vector_add_kernel<<<blocks, threads>>>(
+            thrust::raw_pointer_cast(da.data()),
+            thrust::raw_pointer_cast(db.data()),
+            thrust::raw_pointer_cast(dc.data()),
+            n
+        );
+    };
     float ms = time_cuda_ms(launch);
     thrust::host_vector<float> hc = dc;
     double err = 0;

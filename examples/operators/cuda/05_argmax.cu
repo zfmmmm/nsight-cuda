@@ -19,21 +19,18 @@ __inline__ __device__ Pair warp_argmax(Pair p) {
     return p;
 }
 
-__global__ void argmax_kernel(const float *x, Pair *partial, int n) {
+__global__ void argmax_kernel(const float* x, Pair* partial, int n) {
     Pair best{-3.402823466e38f, 0};
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x)
         best = better(best, Pair{x[i], i});
     best = warp_argmax(best);
     __shared__ Pair warp_part[32];
     int lane = threadIdx.x & 31, wid = threadIdx.x >> 5;
-    if (lane == 0)
-        warp_part[wid] = best;
+    if (lane == 0) warp_part[wid] = best;
     __syncthreads();
     best = (threadIdx.x < blockDim.x / 32) ? warp_part[lane] : Pair{-3.402823466e38f, 0};
-    if (wid == 0)
-        best = warp_argmax(best);
-    if (threadIdx.x == 0)
-        partial[blockIdx.x] = best;
+    if (wid == 0) best = warp_argmax(best);
+    if (threadIdx.x == 0) partial[blockIdx.x] = best;
 }
 
 int main() {
@@ -48,14 +45,22 @@ int main() {
     Pair *p = thrust::raw_pointer_cast(partial.data()), *o = thrust::raw_pointer_cast(out.data());
     (void)o;
     // 第二阶段用专门 CPU 汇总 partial，保持代码面试可读。
-    float ms = time_cuda_ms([&] { argmax_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(d.data()), p, n); });
+    float ms = time_cuda_ms([&] {
+        argmax_kernel<<<blocks, threads>>>(thrust::raw_pointer_cast(d.data()), p, n);
+    });
     thrust::host_vector<Pair> hp = partial;
     Pair best{-3.402823466e38f, 0};
-    for (auto q : hp)
-        best = (q.v > best.v || (q.v == best.v && q.idx < best.idx)) ? q : best;
+    for (auto q : hp) best = (q.v > best.v || (q.v == best.v && q.idx < best.idx)) ? q : best;
     bool pass = (best.idx == ref_idx && std::abs(best.v - ref_v) < 1e-6);
-    print_result("argmax", "n=4194304", pass, std::abs(best.v - ref_v), ms,
-                 n * sizeof(float) / ms / 1e6, "GB/s");
+    print_result(
+        "argmax",
+        "n=4194304",
+        pass,
+        std::abs(best.v - ref_v),
+        ms,
+        n * sizeof(float) / ms / 1e6,
+        "GB/s"
+    );
     std::printf("argmax index: gpu=%d cpu=%d\n", best.idx, ref_idx);
     return pass ? 0 : 1;
 }

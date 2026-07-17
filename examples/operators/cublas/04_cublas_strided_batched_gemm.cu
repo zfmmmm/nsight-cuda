@@ -22,9 +22,26 @@ int main() {
     CUBLAS_CHECK(cublasCreate(&h));
     float alpha = 1, beta = 0;
     auto launch = [&] {
-        CUBLAS_CHECK(cublasSgemmStridedBatched(h, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha,
-                                               thrust::raw_pointer_cast(dB.data()), N, K * N, thrust::raw_pointer_cast(dA.data()), K, M * K, &beta, thrust::raw_pointer_cast(dC.data()),
-                                               N, M * N, B));
+        CUBLAS_CHECK(cublasSgemmStridedBatched(
+            h,
+            CUBLAS_OP_N,
+            CUBLAS_OP_N,
+            N,
+            M,
+            K,
+            &alpha,
+            thrust::raw_pointer_cast(dB.data()),
+            N,
+            K * N,
+            thrust::raw_pointer_cast(dA.data()),
+            K,
+            M * K,
+            &beta,
+            thrust::raw_pointer_cast(dC.data()),
+            N,
+            M * N,
+            B
+        ));
     };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());
@@ -33,7 +50,14 @@ int main() {
     bool pass = check_close(ref, got, 1e-2f, &err);
     float ms = time_cuda_ms(launch, 3, 30);
     CUBLAS_CHECK(cublasDestroy(h));
-    print_result("cublas_strided_batched_gemm", "B=64,M=N=K=64", pass, err, ms,
-                 2.0 * B * M * N * K / ms / 1e6, "GFLOP/s");
+    print_result(
+        "cublas_strided_batched_gemm",
+        "B=64,M=N=K=64",
+        pass,
+        err,
+        ms,
+        2.0 * B * M * N * K / ms / 1e6,
+        "GFLOP/s"
+    );
     return pass ? 0 : 1;
 }

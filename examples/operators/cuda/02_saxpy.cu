@@ -4,7 +4,7 @@
 // 运行: ./02_saxpy
 #include "common.hpp"
 
-__global__ void saxpy_kernel(float alpha, const float *x, float *y, int n) {
+__global__ void saxpy_kernel(float alpha, const float* x, float* y, int n) {
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x) {
         y[i] = alpha * x[i] + y[i];
     }
@@ -17,11 +17,14 @@ int main() {
     fill_random(hx);
     fill_random(hy, -2, 2, 456);
     href = hy;
-    for (int i = 0; i < n; ++i)
-        href[i] = alpha * hx[i] + href[i];
+    for (int i = 0; i < n; ++i) href[i] = alpha * hx[i] + href[i];
     thrust::device_vector<float> dx = hx, dy = hy;
     int threads = 256, blocks = std::min((n + threads - 1) / threads, 4096);
-    auto launch = [&] { saxpy_kernel<<<blocks, threads>>>(alpha, thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(dy.data()), n); };
+    auto launch = [&] {
+        saxpy_kernel<<<blocks, threads>>>(
+            alpha, thrust::raw_pointer_cast(dx.data()), thrust::raw_pointer_cast(dy.data()), n
+        );
+    };
     launch();
     CUDA_CHECK(cudaDeviceSynchronize());
     thrust::host_vector<float> got = dy;
