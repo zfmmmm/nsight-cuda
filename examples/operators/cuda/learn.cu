@@ -1,9 +1,4 @@
-// 算子: Reduce Sum
-// 面试考点: block reduce、shared memory、warp shuffle、二阶段归约
-// 编译: nvcc -O3 -lineinfo -std=c++17 -I../include 03_reduce_sum.cu -o 03_reduce_sum
-// 运行: ./03_reduce_sum
 #include "common.hpp"
-
 __inline__ __device__ float warp_sum(float v){
     //使用shuffle进行warp内原子规约
     for(int off=16;off>0;off>>=1){
@@ -15,7 +10,7 @@ __inline__ __device__ float warp_sum(float v){
 __global__ void reduce_sum_kernel(float* x,float* partial,int n){
     float sum=0;
     //正常和
-    for(int i=blockIdx.x*blockDim.x+threadIdx.x;i<n;i+=gridDim.x*blockDim.x){
+    for(int i=blockDim.x*blockIdx.x+threadIdx.x;i<n;i+=blockDim.x*gridDim.x){
         sum+=x[i];
     }
     //以warp为单位进行规约
@@ -42,26 +37,23 @@ __global__ void reduce_sum_kernel(float* x,float* partial,int n){
     }
 }
 
-int main() {
-    const int n = 1 << 24, threads = 256, blocks = 1024;
+int main(){
+    int n=1<<24;
+    int thread=256,blocks=1024;
     thrust::host_vector<float> h(n);
-    fill_random(h, -1, 1);
-    double ref = std::accumulate(h.begin(), h.end(), 0.0);
-    thrust::device_vector<float> d = h, partial(blocks), out(1);
-
-    auto launch = [&] {
-        reduce_sum_kernel<<<blocks, threads>>>(
-            thrust::raw_pointer_cast(d.data()), thrust::raw_pointer_cast(partial.data()), n
-        );//规约成1024个值
-        reduce_sum_kernel<<<1, threads>>>(
-            thrust::raw_pointer_cast(partial.data()), thrust::raw_pointer_cast(out.data()), blocks
-        );//启动一个block，将1024个值进行规约
+    thrust::device_vector<float> d=h,partial(blocks),out(1);
+    auto launch=[&]{
+        reduce_sum_kernel<<<blocks,thread>>>(
+            thrust::raw_pointer_cast(d.data()),
+            thrust::raw_pointer_cast(partial.data()),
+            n
+        );
+        reduce_sum_kernel<<<1,thread>>>(
+            thrust::raw_pointer_cast(partial.data()),
+            thrust::raw_pointer_cast(out.data()),
+            blocks
+        );
     };
-    float ms = time_cuda_ms(launch);
-    thrust::host_vector<float> got = out;
-    double err = std::abs(ref - got[0]);
-    bool pass = err < 1e-2;
-    double gb = n * sizeof(float) / ms / 1e6;
-    print_result("reduce_sum", "n=16777216", pass, err, ms, gb, "GB/s");
-    return pass ? 0 : 1;
+    launch();
+    thrust::host_vector<float> output=out;
 }

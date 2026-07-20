@@ -5,6 +5,7 @@
 #include "common.hpp"
 
 __global__ void vector_add_kernel(const float* a, const float* b, float* c, int n) {
+    //每个线程认领一份，每次计算完当前元素后，向后跳跃一个“全网格总线程数”的距离，从而用有限的线程分批、高效地处理完任意超大长度的数组
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += blockDim.x * gridDim.x) {
         c[i] = a[i] + b[i];
     }
